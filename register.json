@@ -1,0 +1,18 @@
+{
+    "account_id": 1,
+    "account_details": {
+        "account_email": "example@example.com",
+        "account_password": "hashed_password",
+        "account_name": "John Doe",
+        "account_gender": "Male",
+        "account_birthday": "1990-01-01",
+        "account_picture": "https://example.com/profile.jpg",
+        "account_telephone": "+1234567890",
+        "location": {
+            "latitude": 37.7749,
+            "longitude": -122.4194
+        },
+        "created_at": "2025-01-28T10:00:00Z",
+        "updated_at": "2025-01-28T10:00:00Z"
+    }  
+}
