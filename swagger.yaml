@@ -11,8 +11,7 @@ servers:
 paths:
   /register:
     get:
-      tags:
-        - Register
+      tags: [register]
       summary: Returns a list of register.
       description: Optional extended description in CommonMark or HTML.
       responses:

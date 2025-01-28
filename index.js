@@ -19,6 +19,17 @@ const connection = mysql.createConnection({
     database: 'traval_app',
 });
 
+function convertToThailandTime(utcDate) {
+    const date = new Date(utcDate);
+    const thailandOffset = 7 * 60; // UTC+7 in minutes
+    const thailandDate = new Date(date.getTime() + thailandOffset * 60000); // Convert to Thailand time
+    return thailandDate.toISOString().replace("Z", "+07:00"); // Ensure it has the correct timezone offset
+}
+
+const created_at_utc = "2025-01-28T10:00:00Z";
+const updated_at_utc = "2025-01-28T10:00:00Z";
+
+
 //------------------------------ register ------------------------------//
 
 app.get('/register', (req, res) => {
@@ -44,16 +55,6 @@ app.post('/register', (req, res) => {
         latitude, 
         longitude, 
     } = req.body;
-
-function convertToThailandTime(utcDate) {
-    const date = new Date(utcDate);
-    const thailandOffset = 7 * 60; // UTC+7 in minutes
-    const thailandDate = new Date(date.getTime() + thailandOffset * 60000); // Convert to Thailand time
-    return thailandDate.toISOString().replace("Z", "+07:00"); // Ensure it has the correct timezone offset
-}
-
-const created_at_utc = "2025-01-28T10:00:00Z";
-const updated_at_utc = "2025-01-28T10:00:00Z";
 
 // Convert to UTC+7 (Thailand)
 const created_at = convertToThailandTime(created_at_utc);
