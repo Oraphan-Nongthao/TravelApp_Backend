@@ -142,49 +142,49 @@ paths:
         '404':
           description: Profile not found
 
-put:
-  summary: Updates a profile.
-  tags: [profile]
-  parameters:
-    - name: id
-      in: path
-      required: true
-      description: User ID
-      schema:
-        type: integer
-        format: int64
-  requestBody:
-    required: true 
-    content:
-      application/json:
-        schema:
-          type: object
-          properties:
-            account_email:
-              type: string
-            account_password:
-              type: string  
-            account_name:
-              type: string
-            account_gender:
-              type: string
-            account_birthday:
-              type: string
-              format: date  
-            account_picture:
-              type: string   
-            account_telephone:
-              type: string
-            latitude:
-              type: number
-              format: float                  
-            longitude:
-              type: number
-              format: float     
-  responses: 
-    '200':
-      description: Profile updated successfully
-    '404':
-      description: Profile not found
-    '500':
-      description: Internal server error
+    put:
+      summary: Updates a profile.
+      tags: [profile]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: User ID
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true 
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                account_email:
+                  type: string
+                account_password:
+                  type: string  
+                account_name:
+                  type: string
+                account_gender:
+                  type: string
+                account_birthday:
+                  type: string
+                  format: date  
+                account_picture:
+                  type: string   
+                account_telephone:
+                  type: string
+                latitude:
+                  type: number
+                  format: float                  
+                longitude:
+                  type: number
+                  format: float     
+      responses: 
+        '200':
+          description: Profile updated successfully
+        '404':
+          description: Profile not found
+        '500':
+          description: Internal server error
