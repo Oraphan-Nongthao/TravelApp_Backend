@@ -5,10 +5,16 @@ const fs = require('fs');
 const YAML = require('yaml');
 const bcrypt = require('bcrypt');
 const dotenv = require('dotenv');
+dotenv.config();
 const jwt = require('jsonwebtoken');
 
-dotenv.config();
-
+/*
+const OpenAI = require("openai");
+const openai = new OpenAI({
+    apiKey: process.env.OPEN_AI_KEY,
+});
+*/
+    
 const app = express();
 const port = process.env.PORT || 3000;
 const saltRounds = 10;
@@ -35,9 +41,9 @@ const sequelize = new Sequelize(
 const checkConnection = async () => {
     try {
         await sequelize.authenticate();
-        console.log('✅ Database connection is alive.');
+        console.log('Database connection is alive.');
     } catch (error) {
-        console.error('❌ Database connection failed:', error.message);
+        console.error('Database connection failed:', error.message);
     }
 };
 setInterval(checkConnection, 60000);
@@ -150,7 +156,7 @@ app.post('/signin', async (req, res) => {
         const token = jwt.sign(
             { account_id: user.account_id, account_email: user.account_email },
             process.env.JWT_SECRET,
-            { expiresIn: '1h' }  // กำหนดเวลาให้ token หมดอายุใน 1 ชั่วโมง
+            { expiresIn: '30 m' }  // กำหนดเวลาให้ token หมดอายุใน 30 นาที
         );
 
         res.status(200).json({ token });
@@ -305,6 +311,21 @@ app.put('/profile/:id', async (req, res) => {
     }
 });
 
+// ----------------------------- Open AI ----------------------------- //
+
+/*const completion = openai.chat.completions.create({
+    model: "gpt-4o-mini",
+    store: true,
+    messages: [
+    {"role": "user", "content": "ฉันชอบเดินทาง เเนะนำสถานที่เที่ยวหน่อยเเค่ 5 สถานที่ในกรุงเทพ"},
+    ],
+    max_tokens: 400,
+    });
+
+    
+    completion.then((result) => console.log(result.choices[0].message)
+);
+*/
 
 
 app.listen(port, () => {
