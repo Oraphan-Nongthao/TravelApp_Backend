@@ -18,12 +18,14 @@ const openai = new OpenAI({
 const app = express();
 const port = process.env.PORT || 3000;
 const saltRounds = 10;
-
+const axios = require("axios");
 const file = fs.readFileSync('./swagger.yaml', 'utf-8');
 const swaggerDocument = YAML.parse(file);
 
 app.use(express.json());
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+
+const LONGDO_API_KEY = process.env.LONGDO_API_KEY;
 
 const sequelize = new Sequelize(
     process.env.DB_NAME,
@@ -132,7 +134,7 @@ app.get('/signin', async (req, res) => {
 app.post('/signin', async (req, res) => {
     try {
         const { account_email, account_password } = req.body;
-
+        
         // ค้นหาผู้ใช้จากฐานข้อมูล
         const [user] = await sequelize.query(
             `SELECT * FROM register_account WHERE account_email = ?`,
@@ -145,20 +147,20 @@ app.post('/signin', async (req, res) => {
         if (!user) {
             return res.status(400).json({ error: 'Invalid credentials' });
         }
-
+        
         // ตรวจสอบรหัสผ่าน
         const isMatch = await bcrypt.compare(account_password, user.account_password);
         if (!isMatch) {
             return res.status(400).json({ error: 'Invalid credentials' });
         }
-
+        
         // สร้าง JWT Token
         const token = jwt.sign(
             { account_id: user.account_id, account_email: user.account_email },
             process.env.JWT_SECRET,
             { expiresIn: '30 m' }  // กำหนดเวลาให้ token หมดอายุใน 30 นาที
         );
-
+        
         res.status(200).json({ token });
     } catch (err) {
         res.status(500).json({ error: 'Internal server error', details: err.message });
@@ -189,11 +191,11 @@ app.get('/profile/:id', async (req, res) => {
                 type: QueryTypes.SELECT 
             }
         );
-
+        
         if (results.length === 0) {
             return res.status(404).json({ error: 'User not found' });
         }
-
+        
         res.json(results[0]);
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -213,16 +215,16 @@ app.post('/profile', async (req, res) => {
             latitude,
             longitude
         } = req.body;
-
+        
         const hashedPassword = await bcrypt.hash(account_password, saltRounds);
         const created_at = convertToThailandTime(new Date());
         const updated_at = convertToThailandTime(new Date());
-
+        
         await sequelize.query(
             `INSERT INTO register_account 
-                (account_email, account_password, account_name, account_gender, account_birthday, 
-                 account_picture, account_telephone, latitude, longitude, created_at, updated_at) 
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            (account_email, account_password, account_name, account_gender, account_birthday, 
+            account_picture, account_telephone, latitude, longitude, created_at, updated_at) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             {
                 replacements: [
                     account_email,
@@ -240,7 +242,7 @@ app.post('/profile', async (req, res) => {
                 type: QueryTypes.INSERT
             }
         );
-
+        
         res.status(201).json({ message: 'User registered successfully' });
     } catch (err) {
         res.status(500).json({ error: 'Database error', details: err.message });
@@ -261,26 +263,26 @@ app.put('/profile/:id', async (req, res) => {
             latitude, 
             longitude
         } = req.body;
-
+        
         if (!id) {
             return res.status(400).json({ error: 'User ID is required' });
         }
-
+        
         const updated_at = convertToThailandTime(new Date());
-
+        
         const [results, metadata] = await sequelize.query(
             `UPDATE register_account 
-             SET account_email = ?, 
-                 account_password = ?, 
-                 account_name = ?, 
-                 account_gender = ?, 
-                 account_birthday = ?, 
-                 account_picture = ?, 
-                 account_telephone = ?, 
-                 latitude = ?, 
-                 longitude = ?, 
-                 updated_at = ?
-             WHERE account_id = ?`,
+            SET account_email = ?, 
+            account_password = ?, 
+            account_name = ?, 
+            account_gender = ?, 
+            account_birthday = ?, 
+            account_picture = ?, 
+            account_telephone = ?, 
+            latitude = ?, 
+            longitude = ?, 
+            updated_at = ?
+            WHERE account_id = ?`,
             {
                 replacements: [
                     account_email, 
@@ -298,36 +300,99 @@ app.put('/profile/:id', async (req, res) => {
                 type: QueryTypes.UPDATE
             }
         );
-
+        
         // Check if metadata is available and has affected rows
         if (!metadata || metadata.affectedRows === 0 || metadata.changedRows === 0) {
             return res.status(404).json({ error: 'User not found or no changes made' });
         }
-
+        
         res.json({ message: 'Profile updated successfully' });
     } catch (err) {
         console.error(err);  // Log the error for debugging
         res.status(500).json({ error: 'Database error', details: err.message });
     }
 });
+// ----------------------------- qa_picture ----------------------------- //
 
-// ----------------------------- Open AI ----------------------------- //
+app.get('/qa_picture' , async (req,res) => {
+    try {
+        await checkConnection();
+        const results = await sequelize.query('SELECT * FROM qa_picture', { type: QueryTypes.SELECT });
+        res.json(results);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+})
 
 /*const completion = openai.chat.completions.create({
+// ----------------------------- Open AI ----------------------------- //
+
     model: "gpt-4o-mini",
     store: true,
     messages: [
-    {"role": "user", "content": "ฉันชอบเดินทาง เเนะนำสถานที่เที่ยวหน่อยเเค่ 5 สถานที่ในกรุงเทพ"},
-    ],
-    max_tokens: 400,
-    });
+        {"role": "user", "content": "ฉันชอบเดินทาง เเนะนำสถานที่เที่ยวหน่อยเเค่ 5 สถานที่ในกรุงเทพ"},
+        ],
+        max_tokens: 400,
+        });
+        
+        
+        completion.then((result) => console.log(result.choices[0].message)
+        );
+        */
 
-    
-    completion.then((result) => console.log(result.choices[0].message)
-);
-*/
+// ----------------------------- Test longdo ----------------------------- //
 
+app.get("/search_nearby", async (req, res) => {
+    try {
+        const { district  , postcode , radius } = req.query; // รับค่าพิกัดและระยะทาง
+        if ( !district  || !postcode || !radius) {
+            return res.status(400).json({ error: "Missing required parameters" });
+        }
 
+        // เรียก API Longdo Map ค้นหาสถานที่รอบๆ จุดที่กำหนด
+        const response = await axios.get("https://api.longdo.com/POIService/json/search", {
+            params: {
+                key: LONGDO_API_KEY,
+                district ,
+                postcode, 
+                limit: 5, // จำนวนผลลัพธ์สูงสุด
+                span: radius, // ระยะทางค้นหา (เมตร)
+                tag: "ร้านอาหาร" // ระบุประเภทสถานที่
+            },
+        });
+
+        res.json(response.data);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.get("/calculate_distance", async (req, res) => {
+    try {
+        const { start_lat, start_lon, end_lat, end_lon } = req.query;
+        if (!start_lat || !start_lon || !end_lat || !end_lon) {
+            return res.status(400).json({ error: "Missing required parameters" });
+        }
+
+        const response = await axios.get("https://api.longdo.com/RouteService/json/route", {
+            params: {
+                key: LONGDO_API_KEY,
+                mode: "driving", // สามารถเลือก mode เป็น walking หรือ bicycling ได้
+                lon: start_lon,
+                lat: start_lat,
+                lon2: end_lon,
+                lat2: end_lat,
+            },
+        });
+
+        res.json(response.data);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+        
+       
 app.listen(port, () => {
     console.log(`App listening on port ${port}`);
 });

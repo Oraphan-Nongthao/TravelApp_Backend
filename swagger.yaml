@@ -340,3 +340,127 @@ paths:
           description: Internal server error
 
 
+  /qa_picture:
+    get:
+      tags: [qa_picture]
+      summary: Returns a list of qa_picture.
+      responses:
+        "200":
+          description: A JSON array of qa_picture
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    picture_id:
+                      format: int64
+                    picture_url:
+                      type: string
+
+  /search_nearby:
+    get:
+      summary: ค้นหาสถานที่ใกล้เคียง
+      description: ดึงข้อมูลสถานที่รอบๆ ตามพิกัดที่กำหนด
+      parameters:
+        - name: district 
+          in: query
+          required: true
+          schema:
+            type: string
+          description:  เขตของสถานที่ที่ต้องการค้นหา
+        - name: postcode
+          in: query
+          required: true
+          schema:
+            type: number
+          description: รหัสไปรษณีย์ของสถานที่ที่ต้องการค้นหา
+        - name: radius
+          in: query
+          required: true
+          schema:
+            type: integer
+          description: ระยะทางค้นหา (เมตร)
+      responses:
+        "200":
+          description: ข้อมูลสถานที่ที่พบ
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                    address:
+                      type: string
+                    lat:
+                      type: number
+                    lon:
+                      type: number
+        "400":
+          description: ข้อมูลที่ส่งมาไม่ถูกต้อง
+        "500":
+          description: เซิร์ฟเวอร์มีปัญหา
+
+  /calculate_distance:
+    get:
+      summary: คำนวณระยะทางระหว่างสองจุด
+      description: ใช้ Longdo Map API คำนวณระยะทางจากจุดเริ่มต้นไปยังจุดปลายทาง
+      parameters:
+        - name: start_lat
+          in: query
+          required: true
+          schema:
+            type: number
+          description: ละติจูดของจุดเริ่มต้น
+        - name: start_lon
+          in: query
+          required: true
+          schema:
+            type: number
+          description: ลองจิจูดของจุดเริ่มต้น
+        - name: end_lat
+          in: query
+          required: true
+          schema:
+            type: number
+          description: ละติจูดของจุดปลายทาง
+        - name: end_lon
+          in: query
+          required: true
+          schema:
+            type: number
+          description: ลองจิจูดของจุดปลายทาง
+      responses:
+        "200":
+          description: ข้อมูลเส้นทางที่คำนวณได้
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  distance:
+                    type: number
+                    description: ระยะทางที่คำนวณได้ (เมตร)
+                  duration:
+                    type: number
+                    description: เวลาที่ใช้ในการเดินทาง (วินาที)
+                  route:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        lat:
+                          type: number
+                        lon:
+                          type: number
+        "400":
+          description: ข้อมูลที่ส่งมาไม่ครบถ้วน
+        "500":
+          description: เซิร์ฟเวอร์มีปัญหา
+
