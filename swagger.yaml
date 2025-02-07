@@ -358,9 +358,47 @@ paths:
                       format: int64
                     picture_url:
                       type: string
+  /province:
+    get:
+      tags: [province]
+      summary: Retrieve province, district, subdistrict, and region information
+      description: Fetch all data from the database related to provinces, districts, subdistricts, postal codes, and regions
+      responses:
+        '200':
+          description: Success - Returns the requested data list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    zip_code:
+                      type: string
+                    tambon_name:
+                      type: string
+                    amphure_name:
+                      type: string
+                    province_name:
+                      type: string
+                    geography_name:
+                      type: string
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Internal Server Error"
 
   /search_nearby:
     get:
+      tags: [Test longdo]
       summary: ค้นหาสถานที่ใกล้เคียง
       description: ดึงข้อมูลสถานที่รอบๆ ตามพิกัดที่กำหนด
       parameters:
@@ -402,64 +440,5 @@ paths:
                       type: number
         "400":
           description: ข้อมูลที่ส่งมาไม่ถูกต้อง
-        "500":
-          description: เซิร์ฟเวอร์มีปัญหา
-
-  /calculate_distance:
-    get:
-      summary: คำนวณระยะทางระหว่างสองจุด
-      description: ใช้ Longdo Map API คำนวณระยะทางจากจุดเริ่มต้นไปยังจุดปลายทาง
-      parameters:
-        - name: start_lat
-          in: query
-          required: true
-          schema:
-            type: number
-          description: ละติจูดของจุดเริ่มต้น
-        - name: start_lon
-          in: query
-          required: true
-          schema:
-            type: number
-          description: ลองจิจูดของจุดเริ่มต้น
-        - name: end_lat
-          in: query
-          required: true
-          schema:
-            type: number
-          description: ละติจูดของจุดปลายทาง
-        - name: end_lon
-          in: query
-          required: true
-          schema:
-            type: number
-          description: ลองจิจูดของจุดปลายทาง
-      responses:
-        "200":
-          description: ข้อมูลเส้นทางที่คำนวณได้
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                  distance:
-                    type: number
-                    description: ระยะทางที่คำนวณได้ (เมตร)
-                  duration:
-                    type: number
-                    description: เวลาที่ใช้ในการเดินทาง (วินาที)
-                  route:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        lat:
-                          type: number
-                        lon:
-                          type: number
-        "400":
-          description: ข้อมูลที่ส่งมาไม่ครบถ้วน
         "500":
           description: เซิร์ฟเวอร์มีปัญหา

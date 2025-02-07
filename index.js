@@ -324,6 +324,20 @@ app.get('/qa_picture' , async (req,res) => {
     }
 })
 
+// ----------------------------- province ----------------------------- //
+
+app.get('/province' , async (req,res) => {
+    try {
+        await checkConnection();
+        const results = await sequelize.query('SELECT thai_amphures.id, thai_tambons.zip_code, thai_tambons.name_th AS tambon_name, thai_amphures.name_th AS amphure_name, thai_provinces.province_th AS province_name, thai_geographies.name AS geography_name FROM thai_tambons JOIN thai_amphures ON thai_tambons.amphure_id = thai_amphures.id JOIN thai_provinces ON thai_amphures.province_id = thai_provinces.id JOIN thai_geographies ON thai_provinces.geography_id = thai_geographies.id'
+        , { type: QueryTypes.SELECT });
+        res.json(results);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+})
+
+
 /*const completion = openai.chat.completions.create({
 // ----------------------------- Open AI ----------------------------- //
 
@@ -358,30 +372,6 @@ app.get("/search_nearby", async (req, res) => {
                 limit: 5, // จำนวนผลลัพธ์สูงสุด
                 span: radius, // ระยะทางค้นหา (เมตร)
                 tag: "ร้านอาหาร" // ระบุประเภทสถานที่
-            },
-        });
-
-        res.json(response.data);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-app.get("/calculate_distance", async (req, res) => {
-    try {
-        const { start_lat, start_lon, end_lat, end_lon } = req.query;
-        if (!start_lat || !start_lon || !end_lat || !end_lon) {
-            return res.status(400).json({ error: "Missing required parameters" });
-        }
-
-        const response = await axios.get("https://api.longdo.com/RouteService/json/route", {
-            params: {
-                key: LONGDO_API_KEY,
-                mode: "driving", // สามารถเลือก mode เป็น walking หรือ bicycling ได้
-                lon: start_lon,
-                lat: start_lat,
-                lon2: end_lon,
-                lat2: end_lat,
             },
         });
 
