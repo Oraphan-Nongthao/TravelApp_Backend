@@ -58,25 +58,16 @@ function convertToThailandTime(utcDate) {
 }
 
 // ----------------------------- signup ----------------------------- //
-/*app.get('/signup', async (req, res) => {
-    try {
-        await checkConnection();
-        const results = await sequelize.query('SELECT * FROM register_account', { type: QueryTypes.SELECT });
-        res.json(results);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});*/
 
 app.post('/signup', async (req, res) => {
     try {
         const { account_email, account_password, confirm_password } = req.body;
-
+        
         // ตรวจสอบว่ารหัสผ่านกับยืนยันรหัสผ่านตรงกันหรือไม่
         if (account_password !== confirm_password) {
             return res.status(400).json({ error: 'Passwords do not match' });
         }
-
+        
         // ตรวจสอบว่า email มีอยู่ในฐานข้อมูลแล้วหรือยัง
         const [existingUser] = await sequelize.query(
             `SELECT * FROM register_account WHERE account_email = ?`,
@@ -85,23 +76,23 @@ app.post('/signup', async (req, res) => {
                 type: QueryTypes.SELECT
             }
         );
-
+        
         if (existingUser) {
             return res.status(400).json({ error: 'Email is already registered' });
         }
 
         // เข้ารหัสรหัสผ่าน
         const hashedPassword = await bcrypt.hash(account_password, saltRounds);
-
+        
         // สร้างเวลาในรูปแบบเวลาประเทศไทย
         const created_at = convertToThailandTime(new Date());
         const updated_at = convertToThailandTime(new Date());
-
+        
         // บันทึกข้อมูลลงในฐานข้อมูล (เก็บแค่ email และ password)
         await sequelize.query(
             `INSERT INTO register_account 
-                (account_email, account_password, created_at, updated_at) 
-             VALUES (?, ?, ?, ?)`,
+            (account_email, account_password, created_at, updated_at) 
+            VALUES (?, ?, ?, ?)`,
             {
                 replacements: [
                     account_email,
@@ -112,13 +103,22 @@ app.post('/signup', async (req, res) => {
                 type: QueryTypes.INSERT
             }
         );
-
+        
         res.status(201).json({ message: 'User registered successfully' });
     } catch (err) {
         res.status(500).json({ error: 'Database error', details: err.message });
     }
 });
 
+/*app.get('/signup', async (req, res) => {
+    try {
+        await checkConnection();
+        const results = await sequelize.query('SELECT * FROM register_account', { type: QueryTypes.SELECT });
+        res.json(results);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});*/
 
 // ----------------------------- signin ----------------------------- //
 
@@ -170,63 +170,13 @@ app.get('/accounts_list', async (req, res) => {
     }
 });
 
-
-
-
 // ----------------------------- profile ----------------------------- //
-
-/*app.post('/profile', async (req, res) => {
-    try {
-        const {
-            account_email,
-            account_password,
-            account_name,
-            account_gender,
-            account_birthday,
-            account_picture,
-            account_telephone,
-            latitude,
-            longitude
-        } = req.body;
-        
-        const hashedPassword = await bcrypt.hash(account_password, saltRounds);
-        const created_at = convertToThailandTime(new Date());
-        const updated_at = convertToThailandTime(new Date());
-        
-        await sequelize.query(
-            `INSERT INTO register_account 
-            (account_email, account_password, account_name, account_gender, account_birthday, 
-            account_picture, account_telephone, latitude, longitude, created_at, updated_at) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            {
-                replacements: [
-                    account_email,
-                    hashedPassword,
-                    account_name,
-                    account_gender,
-                    account_birthday,
-                    account_picture,
-                    account_telephone,
-                    latitude,
-                    longitude,
-                    created_at,
-                    updated_at
-                ],
-                type: QueryTypes.INSERT
-            }
-        );
-        
-        res.status(201).json({ message: 'User registered successfully' });
-    } catch (err) {
-        res.status(500).json({ error: 'Database error', details: err.message });
-    }
-});*/
 
 app.get('/profile/:id', async (req, res) => {
     try {
         const { id } = req.params;
         await checkConnection();
-
+        
         const results = await sequelize.query(
             'SELECT * FROM register_account WHERE account_id = ?', 
             { 
@@ -308,6 +258,53 @@ app.put('/profile/:id', async (req, res) => {
         res.status(500).json({ error: 'Database error', details: err.message });
     }
 });
+
+/*app.post('/profile', async (req, res) => {
+    try {
+        const {
+            account_email,
+            account_password,
+            account_name,
+            account_gender,
+            account_birthday,
+            account_picture,
+            account_telephone,
+            latitude,
+            longitude
+        } = req.body;
+        
+        const hashedPassword = await bcrypt.hash(account_password, saltRounds);
+        const created_at = convertToThailandTime(new Date());
+        const updated_at = convertToThailandTime(new Date());
+        
+        await sequelize.query(
+            `INSERT INTO register_account 
+            (account_email, account_password, account_name, account_gender, account_birthday, 
+            account_picture, account_telephone, latitude, longitude, created_at, updated_at) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            {
+                replacements: [
+                    account_email,
+                    hashedPassword,
+                    account_name,
+                    account_gender,
+                    account_birthday,
+                    account_picture,
+                    account_telephone,
+                    latitude,
+                    longitude,
+                    created_at,
+                    updated_at
+                ],
+                type: QueryTypes.INSERT
+            }
+        );
+        
+        res.status(201).json({ message: 'User registered successfully' });
+    } catch (err) {
+        res.status(500).json({ error: 'Database error', details: err.message });
+    }
+});*/
 // ----------------------------- qa_picture ----------------------------- //
 
 app.get('/qa_picture' , async (req,res) => {
@@ -334,22 +331,6 @@ app.get('/province' , async (req,res) => {
 })
 
 
-/*const completion = openai.chat.completions.create({
-// ----------------------------- Open AI ----------------------------- //
-
-    model: "gpt-4o-mini",
-    store: true,
-    messages: [
-        {"role": "user", "content": "ฉันชอบเดินทาง เเนะนำสถานที่เที่ยวหน่อยเเค่ 5 สถานที่ในกรุงเทพ"},
-        ],
-        max_tokens: 400,
-        });
-        
-        
-        completion.then((result) => console.log(result.choices[0].message)
-        );
-        */
-
 // ----------------------------- Test longdo ----------------------------- //
 
 app.get("/search_nearby", async (req, res) => {
@@ -358,7 +339,7 @@ app.get("/search_nearby", async (req, res) => {
         if ( !district  || !postcode || !radius) {
             return res.status(400).json({ error: "Missing required parameters" });
         }
-
+        
         // เรียก API Longdo Map ค้นหาสถานที่รอบๆ จุดที่กำหนด
         const response = await axios.get("https://api.longdo.com/POIService/json/search", {
             params: {
@@ -377,7 +358,23 @@ app.get("/search_nearby", async (req, res) => {
     }
 });
 
-  
+
+/*const completion = openai.chat.completions.create({
+// ----------------------------- Open AI ----------------------------- //
+
+    model: "gpt-4o-mini",
+    store: true,
+    messages: [
+        {"role": "user", "content": "ฉันชอบเดินทาง เเนะนำสถานที่เที่ยวหน่อยเเค่ 5 สถานที่ในกรุงเทพ"},
+        ],
+        max_tokens: 400,
+        });
+        
+        
+        completion.then((result) => console.log(result.choices[0].message)
+        );
+*/
+
 app.listen(port, () => {
     console.log(`App listening on port ${port}`);
 });
