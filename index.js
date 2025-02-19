@@ -58,7 +58,7 @@ function convertToThailandTime(utcDate) {
 }
 
 // ----------------------------- signup ----------------------------- //
-app.get('/signup', async (req, res) => {
+/*app.get('/signup', async (req, res) => {
     try {
         await checkConnection();
         const results = await sequelize.query('SELECT * FROM register_account', { type: QueryTypes.SELECT });
@@ -66,7 +66,8 @@ app.get('/signup', async (req, res) => {
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
-});
+});*/
+
 app.post('/signup', async (req, res) => {
     try {
         const { account_email, account_password, confirm_password } = req.body;
@@ -121,16 +122,6 @@ app.post('/signup', async (req, res) => {
 
 // ----------------------------- signin ----------------------------- //
 
-app.get('/signin', async (req, res) => {
-    try {
-        await checkConnection();
-        const results = await sequelize.query('SELECT * FROM register_account', { type: QueryTypes.SELECT });
-        res.json(results);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-
 app.post('/signin', async (req, res) => {
     try {
         const { account_email, account_password } = req.body;
@@ -167,9 +158,9 @@ app.post('/signin', async (req, res) => {
     }
 });
 
-// ----------------------------- profile ----------------------------- //
+// ----------------------------- admin ----------------------------- //
 
-app.get('/profile', async (req, res) => {
+app.get('/accounts_list', async (req, res) => {
     try {
         await checkConnection();
         const results = await sequelize.query('SELECT * FROM register_account', { type: QueryTypes.SELECT });
@@ -179,7 +170,17 @@ app.get('/profile', async (req, res) => {
     }
 });
 
-app.get('/profile/:id', async (req, res) => {
+app.get('/accounts_list_profile', async (req, res) => {
+    try {
+        await checkConnection();
+        const results = await sequelize.query('SELECT * FROM register_account', { type: QueryTypes.SELECT });
+        res.json(results);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.get('/accounts_list_profile/:id', async (req, res) => {
     try {
         const { id } = req.params;
         await checkConnection();
@@ -201,6 +202,8 @@ app.get('/profile/:id', async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+
+// ----------------------------- profile ----------------------------- //
 
 app.post('/profile', async (req, res) => {
     try {

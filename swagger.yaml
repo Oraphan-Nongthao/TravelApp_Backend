@@ -10,49 +10,9 @@ servers:
 
 paths:
 
-  #----------------------------- signup ----------------------------- #
+  #----------------------------- sign up ----------------------------- #
 
   /signup:
-    get:
-      tags: [signup]
-      summary: Returns a list of signup.
-      responses:
-        "200":
-          description: A JSON array of signup
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    account_id:
-                      format: int64
-                    account_email:
-                      type: string
-                    account_name:
-                      type: string
-                    account_gender:
-                      type: string
-                    account_birthday:
-                      type: string
-                      format: date
-                    account_picture:
-                      type: string
-                    account_telephone:
-                      type: string
-                    latitude:
-                      type: number
-                      format: float
-                    longitude:
-                      type: number
-                      format: float
-                    created_at:
-                      type: string
-                      format: date-time
-                    updated_at:
-                      type: string
-                      format: date-time
     post:
       summary: User registration
       tags: [signup]
@@ -81,15 +41,15 @@ paths:
         '500':
           description: Internal server error
 
-#----------------------------- signin ----------------------------- #
+#----------------------------- accounts_list ----------------------------- #
 
-  /signin:
+  /accounts_list:
     get:
-      tags: [signin]
-      summary: Returns a list of signin.
+      tags: [accounts_list]
+      summary: Returns a list of accounts_list.
       responses:
         "200":
-          description: A JSON array of signin
+          description: A JSON array of accounts_list
           content:
             application/json:
               schema:
@@ -125,47 +85,13 @@ paths:
                       type: string
                       format: date-time
 
-    post:
-      summary: User sign-in (authentication)
-      tags: [signin]
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - account_email
-                - account_password
-              properties:
-                account_email:
-                  type: string
-                account_password:
-                  type: string
-      responses:
-        '200':
-          description: User signed in successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  token:
-                    type: string
-                    description: JWT token for authentication
-        '400':
-          description: Invalid credentials
-        '500':
-          description: Internal server error
-
-#----------------------------- profile ----------------------------- #
-  /profile:
+  /accounts_list_profile:
     get:
-      tags: [profile]
-      summary: Returns a list of profiles.
+      tags: [accounts_list]
+      summary: Returns a list of accounts_list_profiles.
       responses:
         "200":
-          description: A JSON array of profiles
+          description: A JSON array of accounts_list_profiles
           content:
             application/json:
               schema:
@@ -201,49 +127,10 @@ paths:
                       type: string
                       format: date-time
 
-    post:
-      summary: Creates a new profile.
-      tags: [profile]
-      requestBody:
-        required: true 
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - account_email
-                - account_password
-                - account_name
-              properties:
-                account_email:
-                  type: string
-                account_password:
-                  type: string  
-                account_name:
-                  type: string
-                account_gender:
-                  type: string
-                account_birthday:
-                  type: string
-                  format: date  
-                account_picture:
-                  type: string   
-                account_telephone:
-                  type: string
-                latitude:
-                  type: number
-                  format: float                  
-                longitude:
-                  type: number
-                  format: float     
-      responses: 
-        '201':
-          description: User successfully created
-
-  /profile/{id}:
+  /accounts_list_profile/{id}:
     get:
       summary: Returns a profile by ID.
-      tags: [profile]
+      tags: [accounts_list]
       parameters:
         - name: id
           in: path
@@ -291,6 +178,82 @@ paths:
                     format: date-time
         '404':
           description: Profile not found
+
+#----------------------------- sign in ----------------------------- #
+
+    post:
+      summary: User sign-in (authentication)
+      tags: [signin]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - account_email
+                - account_password
+              properties:
+                account_email:
+                  type: string
+                account_password:
+                  type: string
+      responses:
+        '200':
+          description: User signed in successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    description: JWT token for authentication
+        '400':
+          description: Invalid credentials
+        '500':
+          description: Internal server error
+
+#----------------------------- profile ----------------------------- #
+  /profile:
+    post:
+      summary: Creates a new profile.
+      tags: [profile]
+      requestBody:
+        required: true 
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - account_email
+                - account_password
+                - account_name
+              properties:
+                account_email:
+                  type: string
+                account_password:
+                  type: string  
+                account_name:
+                  type: string
+                account_gender:
+                  type: string
+                account_birthday:
+                  type: string
+                  format: date  
+                account_picture:
+                  type: string   
+                account_telephone:
+                  type: string
+                latitude:
+                  type: number
+                  format: float                  
+                longitude:
+                  type: number
+                  format: float     
+      responses: 
+        '201':
+          description: User successfully created
 
     put:
       summary: Updates a profile.
