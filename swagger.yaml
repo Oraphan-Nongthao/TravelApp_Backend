@@ -326,12 +326,6 @@ paths:
       summary: ค้นหาสถานที่ใกล้เคียง
       description: ดึงข้อมูลสถานที่รอบๆ ตามพิกัดที่กำหนด
       parameters:
-        - name: district 
-          in: query
-          required: true
-          schema:
-            type: string
-          description:  เขตของสถานที่ที่ต้องการค้นหา
         - name: postcode
           in: query
           required: true

@@ -335,8 +335,8 @@ app.get('/province' , async (req,res) => {
 
 app.get("/search_nearby", async (req, res) => {
     try {
-        const { district  , postcode , radius } = req.query; // รับค่าพิกัดและระยะทาง
-        if ( !district  || !postcode || !radius) {
+        const { postcode , radius } = req.query; // รับค่าพิกัดและระยะทาง
+        if ( !postcode || !radius) {
             return res.status(400).json({ error: "Missing required parameters" });
         }
         
@@ -344,11 +344,10 @@ app.get("/search_nearby", async (req, res) => {
         const response = await axios.get("https://api.longdo.com/POIService/json/search", {
             params: {
                 key: LONGDO_API_KEY,
-                district ,
                 postcode, 
                 limit: 5, // จำนวนผลลัพธ์สูงสุด
                 span: radius, // ระยะทางค้นหา (เมตร)
-                tag: "ร้านอาหาร" // ระบุประเภทสถานที่
+                tag: "park" // ระบุประเภทสถานที่
             },
         });
 
