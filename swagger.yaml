@@ -85,99 +85,7 @@ paths:
                       type: string
                       format: date-time
 
-  /accounts_list_profile:
-    get:
-      tags: [accounts_list]
-      summary: Returns a list of accounts_list_profiles.
-      responses:
-        "200":
-          description: A JSON array of accounts_list_profiles
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    account_id:
-                      format: int64
-                    account_email:
-                      type: string
-                    account_name:
-                      type: string
-                    account_gender:
-                      type: string
-                    account_birthday:
-                      type: string
-                      format: date
-                    account_picture:
-                      type: string
-                    account_telephone:
-                      type: string
-                    latitude:
-                      type: number
-                      format: float
-                    longitude:
-                      type: number
-                      format: float
-                    created_at:
-                      type: string
-                      format: date-time
-                    updated_at:
-                      type: string
-                      format: date-time
-
-  /accounts_list_profile/{id}:
-    get:
-      summary: Returns a profile by ID.
-      tags: [accounts_list]
-      parameters:
-        - name: id
-          in: path
-          required: true
-          description: User ID
-          schema:
-            type: integer
-            format: int64
-            minimum: 1
-      responses: 
-        '200':
-          description: Profile found
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  account_id:
-                    type: integer
-                    format: int64
-                  account_email:
-                    type: string
-                  account_name:
-                    type: string
-                  account_gender:
-                    type: string
-                  account_birthday:
-                    type: string
-                    format: date
-                  account_picture:
-                    type: string
-                  account_telephone:
-                    type: string
-                  latitude:
-                    type: number
-                    format: float
-                  longitude:
-                    type: number
-                    format: float
-                  created_at:
-                    type: string
-                    format: date-time
-                  updated_at:
-                    type: string
-                    format: date-time
-        '404':
-          description: Profile not found
+  
 
 #----------------------------- sign in ----------------------------- #
 
@@ -215,46 +123,47 @@ paths:
           description: Internal server error
 
 #----------------------------- profile ----------------------------- #
-  /profile:
-    post:
-      summary: Creates a new profile.
-      tags: [profile]
-      requestBody:
-        required: true 
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - account_email
-                - account_password
-                - account_name
-              properties:
-                account_email:
-                  type: string
-                account_password:
-                  type: string  
-                account_name:
-                  type: string
-                account_gender:
-                  type: string
-                account_birthday:
-                  type: string
-                  format: date  
-                account_picture:
-                  type: string   
-                account_telephone:
-                  type: string
-                latitude:
-                  type: number
-                  format: float                  
-                longitude:
-                  type: number
-                  format: float     
-      responses: 
-        '201':
-          description: User successfully created
 
+   # post:
+     # summary: Creates a new profile.
+     # tags: [profile]
+     # requestBody:
+       # required: true 
+       # content:
+         # application/json:
+           # schema:
+             # type: object
+             # required:
+              #  - account_email
+              #  - account_password
+              #  - account_name
+             # properties:
+               # account_email:
+                #  type: string
+               # account_password:
+                 # type: string  
+                #account_name:
+                 # type: string
+               # account_gender:
+                 # type: string
+               # account_birthday:
+                 # type: string
+                 # format: date  
+                #account_picture:
+                 # type: string   
+               # account_telephone:
+                #  type: string
+               # latitude:
+                 # type: number
+                  #format: float                  
+               # longitude:
+                 # type: number
+                 # format: float     
+     # responses: 
+        #'201':
+          #description: User successfully created
+
+  /profile:
     put:
       summary: Updates a profile.
       tags: [profile]
@@ -301,6 +210,58 @@ paths:
           description: Profile not found
         '500':
           description: Internal server error
+
+  /profile/{id}:
+      get:
+        summary: Returns a profile by ID.
+        tags: [profile]
+        parameters:
+          - name: id
+            in: path
+            required: true
+            description: User ID
+            schema:
+              type: integer
+              format: int64
+              minimum: 1
+        responses: 
+          '200':
+            description: Profile found
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    account_id:
+                      type: integer
+                      format: int64
+                    account_email:
+                      type: string
+                    account_name:
+                      type: string
+                    account_gender:
+                      type: string
+                    account_birthday:
+                      type: string
+                      format: date
+                    account_picture:
+                      type: string
+                    account_telephone:
+                      type: string
+                    latitude:
+                      type: number
+                      format: float
+                    longitude:
+                      type: number
+                      format: float
+                    created_at:
+                      type: string
+                      format: date-time
+                    updated_at:
+                      type: string
+                      format: date-time
+          '404':
+            description: Profile not found
 
 
   /qa_picture:

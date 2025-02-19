@@ -170,42 +170,12 @@ app.get('/accounts_list', async (req, res) => {
     }
 });
 
-app.get('/accounts_list_profile', async (req, res) => {
-    try {
-        await checkConnection();
-        const results = await sequelize.query('SELECT * FROM register_account', { type: QueryTypes.SELECT });
-        res.json(results);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
 
-app.get('/accounts_list_profile/:id', async (req, res) => {
-    try {
-        const { id } = req.params;
-        await checkConnection();
 
-        const results = await sequelize.query(
-            'SELECT * FROM register_account WHERE account_id = ?', 
-            { 
-                replacements: [id],  
-                type: QueryTypes.SELECT 
-            }
-        );
-        
-        if (results.length === 0) {
-            return res.status(404).json({ error: 'User not found' });
-        }
-        
-        res.json(results[0]);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
 
 // ----------------------------- profile ----------------------------- //
 
-app.post('/profile', async (req, res) => {
+/*app.post('/profile', async (req, res) => {
     try {
         const {
             account_email,
@@ -249,6 +219,29 @@ app.post('/profile', async (req, res) => {
         res.status(201).json({ message: 'User registered successfully' });
     } catch (err) {
         res.status(500).json({ error: 'Database error', details: err.message });
+    }
+});*/
+
+app.get('/profile/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        await checkConnection();
+
+        const results = await sequelize.query(
+            'SELECT * FROM register_account WHERE account_id = ?', 
+            { 
+                replacements: [id],  
+                type: QueryTypes.SELECT 
+            }
+        );
+        
+        if (results.length === 0) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        
+        res.json(results[0]);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
     }
 });
 
