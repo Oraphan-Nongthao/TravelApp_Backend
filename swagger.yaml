@@ -264,24 +264,6 @@ paths:
             description: Profile not found
 
 
-  /qa_picture:
-    get:
-      tags: [qa_picture]
-      summary: Returns a list of qa_picture.
-      responses:
-        "200":
-          description: A JSON array of qa_picture
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    picture_id:
-                      format: int64
-                    picture_url:
-                      type: string
   /province:
     get:
       tags: [province]
@@ -319,6 +301,63 @@ paths:
                   error:
                     type: string
                     example: "Internal Server Error"
+
+  /qa_picture:
+    get:
+      tags: [qa_picture]
+      summary: Returns a list of qa_picture.
+      responses:
+        "200":
+          description: A JSON array of qa_picture
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    picture_id:
+                      format: int64
+                    picture_url:
+                      type: string
+                      
+  /qa_traveling:
+    get:
+      tags: [qa_traveling]
+      summary: Returns a list of qa_traveling.
+      responses:
+        "200":
+          description: A JSON array of qa_traveling
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    traveling_id :
+                      format: int64
+                    traveling_choice:
+                      type: string
+
+  /qa_distance:
+    get:
+      tags: [qa_distance]
+      summary: Returns a list of qa_distance.
+      responses:
+        "200":
+          description: A JSON array of qa_distance
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    distance_id:
+                      format: int64
+                    distance_km:
+                      type: string
 
   /search_nearby:
     get:

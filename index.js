@@ -330,6 +330,29 @@ app.get('/province' , async (req,res) => {
     }
 })
 
+// ----------------------------- qa_traveling ----------------------------- //
+
+app.get('/qa_traveling' , async (req,res) => {
+    try {
+        await checkConnection();
+        const results = await sequelize.query('SELECT * FROM qa_traveling', { type: QueryTypes.SELECT });
+        res.json(results);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+})
+
+// ----------------------------- qa_distance ----------------------------- //
+
+app.get('/qa_distance' , async (req,res) => {
+    try {
+        await checkConnection();
+        const results = await sequelize.query('SELECT * FROM qa_distance', { type: QueryTypes.SELECT });
+        res.json(results);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+})
 
 // ----------------------------- Test longdo ----------------------------- //
 
