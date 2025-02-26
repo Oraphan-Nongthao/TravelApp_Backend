@@ -7,6 +7,7 @@ const bcrypt = require('bcrypt');
 const dotenv = require('dotenv');
 dotenv.config();
 const jwt = require('jsonwebtoken');
+const cors = require('cors');
 
 /*
 const OpenAI = require("openai");
@@ -23,6 +24,7 @@ const file = fs.readFileSync('./swagger.yaml', 'utf-8');
 const swaggerDocument = YAML.parse(file);
 
 app.use(express.json());
+app.use(cors());
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 const LONGDO_API_KEY = process.env.LONGDO_API_KEY;
