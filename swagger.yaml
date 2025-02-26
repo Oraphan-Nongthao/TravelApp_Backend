@@ -302,6 +302,44 @@ paths:
                     type: string
                     example: "Internal Server Error"
 
+  /province_central:
+    get:
+      tags: [province_central]
+      summary: Retrieve province_central, district, subdistrict, and region information
+      description: Fetch all data from the database related to province_central, districts, subdistricts, postal codes, and regions
+      responses:
+        '200':
+          description: Success - Returns the requested data list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    place_id:
+                      type: integer
+                    place_name:
+                      type: string
+                    place_picture:
+                      type: string
+                    place_map:
+                      type: string
+                    province_th:
+                      type: string
+                    geography_id:
+                      type: string
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Internal Server Error"
+
   /qa_picture:
     get:
       tags: [qa_picture]
@@ -320,7 +358,7 @@ paths:
                       format: int64
                     picture_url:
                       type: string
-                      
+
   /qa_traveling:
     get:
       tags: [qa_traveling]

@@ -330,6 +330,20 @@ app.get('/province' , async (req,res) => {
     }
 })
 
+// ----------------------------- province ----------------------------- //
+
+app.get('/province_central' , async (req,res) => {
+    try {
+        await checkConnection();
+        const results = await sequelize.query('SELECT place_id , place_name , place_picture , place_map ,province_th , geography_id FROM `location_region` INNER JOIN thai_provinces ON location_region.Province_id = thai_provinces.Province_id WHERE geography_id = 2'
+        , { type: QueryTypes.SELECT });
+        res.json(results);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+})
+
+
 // ----------------------------- qa_traveling ----------------------------- //
 
 app.get('/qa_traveling' , async (req,res) => {
@@ -354,6 +368,7 @@ app.get('/qa_distance' , async (req,res) => {
     }
 })
 
+
 // ----------------------------- Test longdo ----------------------------- //
 
 app.get("/search_nearby", async (req, res) => {
@@ -370,7 +385,7 @@ app.get("/search_nearby", async (req, res) => {
                 postcode, 
                 limit: 5, // จำนวนผลลัพธ์สูงสุด
                 span: radius, // ระยะทางค้นหา (เมตร)
-                tag: "park" // ระบุประเภทสถานที่
+                tag: "สวนสาธารณะ" // ระบุประเภทสถานที่
             },
         });
 
