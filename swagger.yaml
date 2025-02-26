@@ -175,20 +175,20 @@ paths:
 
 #----------------------------- profile ----------------------------- #
 
-  /profile:
+  /profile/{id}:
     put:
-      summary: Updates a profile.
+      summary: Update user profile
       tags: [profile]
+      description: Update user profile information, except for account_password.
       parameters:
         - name: id
           in: path
           required: true
-          description: User ID
           schema:
-            type: integer
-            format: int64
+            type: string
+          description: User ID
       requestBody:
-        required: true 
+        required: true
         content:
           application/json:
             schema:
@@ -196,71 +196,106 @@ paths:
               properties:
                 account_email:
                   type: string
-                account_password:
-                  type: string  
+                  format: email
                 account_name:
                   type: string
                 account_gender:
                   type: string
+                  enum: [male, female, other]
                 account_birthday:
                   type: string
-                  format: date  
+                  format: date
                 account_picture:
-                  type: string   
+                  type: string
+                  format: uri
                 account_telephone:
                   type: string
                 latitude:
                   type: number
-                  format: float                  
+                  format: float
                 longitude:
                   type: number
-                  format: float     
-      responses: 
-        '200':
-          description: Profile updated successfully
-        '404':
-          description: Profile not found
-        '500':
-          description: Internal server error
-
-    post:
-      summary: Creates a new profile.
-      tags: [profile]
-      requestBody:
-        required: true 
-        content:
-          application/json:
-            schema:
-              type: object
+                  format: float
               required:
                 - account_email
-                - account_password
                 - account_name
-              properties:
-                account_email:
-                  type: string
-                account_password:
-                  type: string  
-                account_name:
-                  type: string
-                account_gender:
-                 type: string
-                account_birthday:
-                  type: string
-                  format: date  
-                account_picture:
-                  type: string   
-                account_telephone:
-                  type: string
-                latitude:
-                  type: number
-                  format: float                  
-                longitude:
-                  type: number
-                  format: float     
-      responses: 
-        '201':
-          description: User successfully created
+      responses:
+        200:
+          description: Profile updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        400:
+          description: Bad request (missing ID or invalid data)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        404:
+          description: User not found or no changes made
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        500:
+          description: Database error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  details:
+                    type: string
+    #post:
+      #summary: Creates a new profile.
+     # tags: [profile]
+      #requestBody:
+       # required: true 
+       # content:
+        #  application/json:
+           # schema:
+            #  type: object
+            #  required:
+            #    - account_email
+            #    - account_password
+            #    - account_name
+            #  properties:
+             #   account_email:
+              #    type: string
+              #  account_password:
+              #    type: string  
+              #  account_name:
+              #    type: string
+              #  account_gender:
+              #   type: string
+              #  account_birthday:
+              #    type: string
+              #    format: date  
+              #  account_picture:
+              #    type: string   
+              #  account_telephone:
+              #    type: string
+              #  latitude:
+              #    type: number
+              #    format: float                  
+              #  longitude:
+              #    type: number
+              #    format: float     
+    #  responses: 
+    #    '201':
+    #      description: User successfully created
 
 #----------------------------- province -----------------------------#
 

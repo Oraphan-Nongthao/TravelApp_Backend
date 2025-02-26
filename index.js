@@ -147,7 +147,7 @@ app.post('/signin', async (req, res) => {
         
         // สร้าง JWT Token
         const token = jwt.sign(
-            { account_id: user.account_id, account_email: user.account_email },
+            { account_id: user.account_id, account_email: user.account_email,account_name:user.account_name,account_picture:user.account_picture },
             process.env.JWT_SECRET,
             { expiresIn: '30 m' }  // กำหนดเวลาให้ token หมดอายุใน 30 นาที
         );
@@ -194,14 +194,11 @@ app.get('/accounts_list/:id', async (req, res) => {
 });
 
 // ----------------------------- profile ----------------------------- //
-
-
 app.put('/profile/:id', async (req, res) => {
     try {
         const { id } = req.params;
         const {
             account_email, 
-            account_password, 
             account_name, 
             account_gender, 
             account_birthday, 
@@ -220,20 +217,18 @@ app.put('/profile/:id', async (req, res) => {
         const [results, metadata] = await sequelize.query(
             `UPDATE register_account 
             SET account_email = ?, 
-            account_password = ?, 
-            account_name = ?, 
-            account_gender = ?, 
-            account_birthday = ?, 
-            account_picture = ?, 
-            account_telephone = ?, 
-            latitude = ?, 
-            longitude = ?, 
-            updated_at = ?
+                account_name = ?, 
+                account_gender = ?, 
+                account_birthday = ?, 
+                account_picture = ?, 
+                account_telephone = ?, 
+                latitude = ?, 
+                longitude = ?, 
+                updated_at = ?
             WHERE account_id = ?`,
             {
                 replacements: [
                     account_email, 
-                    account_password, 
                     account_name, 
                     account_gender, 
                     account_birthday, 
@@ -248,19 +243,19 @@ app.put('/profile/:id', async (req, res) => {
             }
         );
         
-        // Check if metadata is available and has affected rows
         if (!metadata || metadata.affectedRows === 0 || metadata.changedRows === 0) {
             return res.status(404).json({ error: 'User not found or no changes made' });
         }
         
         res.json({ message: 'Profile updated successfully' });
     } catch (err) {
-        console.error(err);  // Log the error for debugging
+        console.error(err);
         res.status(500).json({ error: 'Database error', details: err.message });
     }
 });
 
-app.post('/profile', async (req, res) => {
+
+/*app.post('/profile', async (req, res) => {
     try {
         const {
             account_email,
@@ -305,7 +300,7 @@ app.post('/profile', async (req, res) => {
     } catch (err) {
         res.status(500).json({ error: 'Database error', details: err.message });
     }
-});
+});*/
 // ----------------------------- qa_picture ----------------------------- //
 
 app.get('/qa_picture' , async (req,res) => {
