@@ -1,6 +1,6 @@
 openapi: 3.0.0
 info:
-  title: Traval App API
+  title: Travel App API
   description: API for managing user profiles.
   version: 0.1.9
 
