@@ -315,18 +315,6 @@ app.get('/qa_picture' , async (req,res) => {
     }
 })
 
-// ----------------------------- province ----------------------------- //
-
-app.get('/province' , async (req,res) => {
-    try {
-        await checkConnection();
-        const results = await sequelize.query('SELECT thai_amphures.id, thai_tambons.zip_code, thai_tambons.name_th AS tambon_name, thai_amphures.name_th AS amphure_name, thai_provinces.province_th AS province_name, thai_geographies.name AS geography_name FROM thai_tambons JOIN thai_amphures ON thai_tambons.amphure_id = thai_amphures.id JOIN thai_provinces ON thai_amphures.province_id = thai_provinces.id JOIN thai_geographies ON thai_provinces.geography_id = thai_geographies.id'
-        , { type: QueryTypes.SELECT });
-        res.json(results);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-})
 
 // ----------------------------- province central ----------------------------- //
 

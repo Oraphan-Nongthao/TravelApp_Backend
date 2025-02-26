@@ -297,45 +297,6 @@ paths:
     #    '201':
     #      description: User successfully created
 
-#----------------------------- province -----------------------------#
-
-  /province:
-    get:
-      tags: [province]
-      summary: Retrieve province, district, subdistrict, and region information
-      description: Fetch all data from the database related to provinces, districts, subdistricts, postal codes, and regions
-      responses:
-        '200':
-          description: Success - Returns the requested data list
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    id:
-                      type: integer
-                    zip_code:
-                      type: string
-                    tambon_name:
-                      type: string
-                    amphure_name:
-                      type: string
-                    province_name:
-                      type: string
-                    geography_name:
-                      type: string
-        '500':
-          description: Server error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    example: "Internal Server Error"
 
 #----------------------------- province central -----------------------------#
 
