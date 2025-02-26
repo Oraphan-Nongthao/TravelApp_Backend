@@ -85,10 +85,61 @@ paths:
                       type: string
                       format: date-time
 
+  /accounts_list/{id}:
+      get:
+        summary: Returns a profile by ID.
+        tags: [accounts_list]
+        parameters:
+          - name: id
+            in: path
+            required: true
+            description: User ID
+            schema:
+              type: integer
+              format: int64
+              minimum: 1
+        responses: 
+          '200':
+            description: Profile found
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    account_id:
+                      type: integer
+                      format: int64
+                    account_email:
+                      type: string
+                    account_name:
+                      type: string
+                    account_gender:
+                      type: string
+                    account_birthday:
+                      type: string
+                      format: date
+                    account_picture:
+                      type: string
+                    account_telephone:
+                      type: string
+                    latitude:
+                      type: number
+                      format: float
+                    longitude:
+                      type: number
+                      format: float
+                    created_at:
+                      type: string
+                      format: date-time
+                    updated_at:
+                      type: string
+                      format: date-time
+          '404':
+            description: Profile not found
   
 
 #----------------------------- sign in ----------------------------- #
-
+  /signin:
     post:
       summary: User sign-in (authentication)
       tags: [signin]
@@ -123,45 +174,6 @@ paths:
           description: Internal server error
 
 #----------------------------- profile ----------------------------- #
-
-   # post:
-     # summary: Creates a new profile.
-     # tags: [profile]
-     # requestBody:
-       # required: true 
-       # content:
-         # application/json:
-           # schema:
-             # type: object
-             # required:
-              #  - account_email
-              #  - account_password
-              #  - account_name
-             # properties:
-               # account_email:
-                #  type: string
-               # account_password:
-                 # type: string  
-                #account_name:
-                 # type: string
-               # account_gender:
-                 # type: string
-               # account_birthday:
-                 # type: string
-                 # format: date  
-                #account_picture:
-                 # type: string   
-               # account_telephone:
-                #  type: string
-               # latitude:
-                 # type: number
-                  #format: float                  
-               # longitude:
-                 # type: number
-                 # format: float     
-     # responses: 
-        #'201':
-          #description: User successfully created
 
   /profile:
     put:
@@ -211,58 +223,46 @@ paths:
         '500':
           description: Internal server error
 
-  /profile/{id}:
-      get:
-        summary: Returns a profile by ID.
-        tags: [profile]
-        parameters:
-          - name: id
-            in: path
-            required: true
-            description: User ID
+    post:
+      summary: Creates a new profile.
+      tags: [profile]
+      requestBody:
+        required: true 
+        content:
+          application/json:
             schema:
-              type: integer
-              format: int64
-              minimum: 1
-        responses: 
-          '200':
-            description: Profile found
-            content:
-              application/json:
-                schema:
-                  type: object
-                  properties:
-                    account_id:
-                      type: integer
-                      format: int64
-                    account_email:
-                      type: string
-                    account_name:
-                      type: string
-                    account_gender:
-                      type: string
-                    account_birthday:
-                      type: string
-                      format: date
-                    account_picture:
-                      type: string
-                    account_telephone:
-                      type: string
-                    latitude:
-                      type: number
-                      format: float
-                    longitude:
-                      type: number
-                      format: float
-                    created_at:
-                      type: string
-                      format: date-time
-                    updated_at:
-                      type: string
-                      format: date-time
-          '404':
-            description: Profile not found
+              type: object
+              required:
+                - account_email
+                - account_password
+                - account_name
+              properties:
+                account_email:
+                  type: string
+                account_password:
+                  type: string  
+                account_name:
+                  type: string
+                account_gender:
+                 type: string
+                account_birthday:
+                  type: string
+                  format: date  
+                account_picture:
+                  type: string   
+                account_telephone:
+                  type: string
+                latitude:
+                  type: number
+                  format: float                  
+                longitude:
+                  type: number
+                  format: float     
+      responses: 
+        '201':
+          description: User successfully created
 
+#----------------------------- province -----------------------------#
 
   /province:
     get:
@@ -302,9 +302,11 @@ paths:
                     type: string
                     example: "Internal Server Error"
 
+#----------------------------- province central -----------------------------#
+
   /province_central:
     get:
-      tags: [province_central]
+      tags: [location_region]
       summary: Retrieve province_central, district, subdistrict, and region information
       description: Fetch all data from the database related to province_central, districts, subdistricts, postal codes, and regions
       responses:
@@ -340,9 +342,131 @@ paths:
                     type: string
                     example: "Internal Server Error"
 
+#----------------------------- province_northern -----------------------------#
+
+  /province_northern:
+    get:
+      tags: [location_region]
+      summary: Retrieve province_northern, district, subdistrict, and region information
+      description: Fetch all data from the database related to province_northern, districts, subdistricts, postal codes, and regions
+      responses:
+        '200':
+          description: Success - Returns the requested data list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    place_id:
+                      type: integer
+                    place_name:
+                      type: string
+                    place_picture:
+                      type: string
+                    place_map:
+                      type: string
+                    province_th:
+                      type: string
+                    geography_id:
+                      type: string
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Internal Server Error"
+
+#----------------------------- province_northeast -----------------------------#
+
+  /province_northeast:
+    get:
+      tags: [location_region]
+      summary: Retrieve province_northeast, district, subdistrict, and region information
+      description: Fetch all data from the database related to province_northeast, districts, subdistricts, postal codes, and regions
+      responses:
+        '200':
+          description: Success - Returns the requested data list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    place_id:
+                      type: integer
+                    place_name:
+                      type: string
+                    place_picture:
+                      type: string
+                    place_map:
+                      type: string
+                    province_th:
+                      type: string
+                    geography_id:
+                      type: string
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Internal Server Error"
+
+#----------------------------- province_south -----------------------------#
+
+  /province_south:
+    get:
+      tags: [location_region]
+      summary: Retrieve province_south, district, subdistrict, and region information
+      description: Fetch all data from the database related to province_south, districts, subdistricts, postal codes, and regions
+      responses:
+        '200':
+          description: Success - Returns the requested data list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    place_id:
+                      type: integer
+                    place_name:
+                      type: string
+                    place_picture:
+                      type: string
+                    place_map:
+                      type: string
+                    province_th:
+                      type: string
+                    geography_id:
+                      type: string
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Internal Server Error"
+
+#----------------------------- qa_picture -----------------------------#
+
   /qa_picture:
     get:
-      tags: [qa_picture]
+      tags: [qa_questions]
       summary: Returns a list of qa_picture.
       responses:
         "200":
@@ -359,9 +483,11 @@ paths:
                     picture_url:
                       type: string
 
+#----------------------------- qa_traveling -----------------------------#
+
   /qa_traveling:
     get:
-      tags: [qa_traveling]
+      tags: [qa_questions]
       summary: Returns a list of qa_traveling.
       responses:
         "200":
@@ -378,9 +504,11 @@ paths:
                     traveling_choice:
                       type: string
 
+ #----------------------------- qa_distance -----------------------------#
+
   /qa_distance:
     get:
-      tags: [qa_distance]
+      tags: [qa_questions]
       summary: Returns a list of qa_distance.
       responses:
         "200":
@@ -396,6 +524,8 @@ paths:
                       format: int64
                     distance_km:
                       type: string
+
+ #----------------------------- test_longdo -----------------------------#
 
   /search_nearby:
     get:
