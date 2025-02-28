@@ -8,6 +8,8 @@ const dotenv = require('dotenv');
 dotenv.config();
 const jwt = require('jsonwebtoken');
 const cors = require('cors');
+const multer = require('multer');
+const path = require('path');
 
 /*
 const OpenAI = require("openai");
@@ -27,6 +29,17 @@ app.use(express.json());
 app.use(cors());
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
+// กำหนดที่เก็บไฟล์
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, 'uploads/'); // เก็บไฟล์ไว้ในโฟลเดอร์ uploads
+    },
+    filename: function (req, file, cb) {
+        cb(null, Date.now() + path.extname(file.originalname)); // ตั้งชื่อไฟล์ใหม่
+    }
+});
+
+const upload = multer({ storage: storage });
 const LONGDO_API_KEY = process.env.LONGDO_API_KEY;
 
 const sequelize = new Sequelize(
@@ -195,61 +208,58 @@ app.get('/accounts_list/:id', async (req, res) => {
     }
 });
 
-// ----------------------------- profile ----------------------------- //
-app.put('/profile/:id', async (req, res) => {
+// ----------------------------- register_account ----------------------------- //
+
+app.put('/profile/:id', upload.single('account_picture'), async (req, res) => {
     try {
         const { id } = req.params;
         const {
-            account_email, 
-            account_name, 
-            account_gender, 
-            account_birthday, 
-            account_picture, 
-            account_telephone, 
-            latitude, 
-            longitude
+            account_email,
+            account_name,
+            account_gender,
+            account_birthday,
+            account_telephone
         } = req.body;
         
         if (!id) {
             return res.status(400).json({ error: 'User ID is required' });
         }
-        
+
+        // ตรวจสอบว่ามีไฟล์ถูกอัปโหลดมาหรือไม่
+        const account_picture = req.file ? `/uploads/${req.file.filename}` : null;
+
         const updated_at = convertToThailandTime(new Date());
-        
+
         const [results, metadata] = await sequelize.query(
             `UPDATE register_account 
             SET account_email = ?, 
                 account_name = ?, 
                 account_gender = ?, 
                 account_birthday = ?, 
-                account_picture = ?, 
+                account_picture = COALESCE(?, account_picture), 
                 account_telephone = ?, 
-                latitude = ?, 
-                longitude = ?, 
                 updated_at = ?
             WHERE account_id = ?`,
             {
                 replacements: [
-                    account_email, 
-                    account_name, 
-                    account_gender, 
-                    account_birthday, 
-                    account_picture, 
-                    account_telephone, 
-                    latitude, 
-                    longitude, 
-                    updated_at, 
+                    account_email,
+                    account_name,
+                    account_gender,
+                    account_birthday,
+                    account_picture, // อัปเดตเฉพาะถ้ามีไฟล์ใหม่
+                    account_telephone,
+                    updated_at,
                     id
                 ],
                 type: QueryTypes.UPDATE
             }
         );
-        
+
         if (!metadata || metadata.affectedRows === 0 || metadata.changedRows === 0) {
             return res.status(404).json({ error: 'User not found or no changes made' });
         }
-        
-        res.json({ message: 'Profile updated successfully' });
+
+        res.json({ message: 'Profile updated successfully', account_picture });
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Database error', details: err.message });

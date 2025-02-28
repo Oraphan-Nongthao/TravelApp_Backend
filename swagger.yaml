@@ -173,7 +173,7 @@ paths:
         '500':
           description: Internal server error
 
-#----------------------------- profile ----------------------------- #
+#----------------------------- register_account ----------------------------- #
 
   /profile/{id}:
     put:
@@ -210,12 +210,29 @@ paths:
                   format: uri
                 account_telephone:
                   type: string
-                latitude:
-                  type: number
-                  format: float
-                longitude:
-                  type: number
-                  format: float
+              required:
+                - account_email
+                - account_name
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                account_email:
+                  type: string
+                  format: email
+                account_name:
+                  type: string
+                account_gender:
+                  type: string
+                  enum: [male, female, other]
+                account_birthday:
+                  type: string
+                  format: date
+                account_picture:
+                  type: string
+                  format: binary  # รองรับการอัปโหลดไฟล์
+                account_telephone:
+                  type: string
               required:
                 - account_email
                 - account_name
