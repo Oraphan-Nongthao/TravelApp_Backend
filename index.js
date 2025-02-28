@@ -210,23 +210,22 @@ app.get('/accounts_list/:id', async (req, res) => {
 
 // ----------------------------- register_account ----------------------------- //
 
-app.put('/profile/:id', upload.single('account_picture'), async (req, res) => {
+app.put('/profile/:id', async (req, res) => {
     try {
+        console.log(req.body); // ตรวจสอบค่าที่ส่งเข้ามา
         const { id } = req.params;
         const {
-            account_email,
-            account_name,
-            account_gender,
-            account_birthday,
-            account_telephone
+            account_email, 
+            account_name, 
+            account_gender, 
+            account_birthday, 
+            account_picture, 
+            account_telephone, 
         } = req.body;
-        
+
         if (!id) {
             return res.status(400).json({ error: 'User ID is required' });
         }
-
-        // ตรวจสอบว่ามีไฟล์ถูกอัปโหลดมาหรือไม่
-        const account_picture = req.file ? `/uploads/${req.file.filename}` : null;
 
         const updated_at = convertToThailandTime(new Date());
 
@@ -236,35 +235,45 @@ app.put('/profile/:id', upload.single('account_picture'), async (req, res) => {
                 account_name = ?, 
                 account_gender = ?, 
                 account_birthday = ?, 
-                account_picture = COALESCE(?, account_picture), 
+                account_picture = ?, 
                 account_telephone = ?, 
                 updated_at = ?
             WHERE account_id = ?`,
             {
                 replacements: [
-                    account_email,
-                    account_name,
-                    account_gender,
-                    account_birthday,
-                    account_picture, // อัปเดตเฉพาะถ้ามีไฟล์ใหม่
-                    account_telephone,
-                    updated_at,
+                    account_email, 
+                    account_name, 
+                    account_gender, 
+                    account_birthday, 
+                    account_picture, 
+                    account_telephone, 
+                    updated_at, 
                     id
                 ],
                 type: QueryTypes.UPDATE
             }
         );
 
-        if (!metadata || metadata.affectedRows === 0 || metadata.changedRows === 0) {
+        if (!metadata || metadata.affectedRows === 0) {
             return res.status(404).json({ error: 'User not found or no changes made' });
         }
 
-        res.json({ message: 'Profile updated successfully', account_picture });
+        // ดึงค่าล่าสุดจากฐานข้อมูลเพื่อยืนยัน
+        const [updatedUser] = await sequelize.query(
+            `SELECT account_picture FROM register_account WHERE account_id = ?`,
+            {
+                replacements: [id],
+                type: QueryTypes.SELECT
+            }
+        );
+
+        res.json({ message: 'Profile updated successfully', account_picture: updatedUser?.account_picture || null });
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Database error', details: err.message });
     }
 });
+
 
 
 /*app.post('/profile', async (req, res) => {
