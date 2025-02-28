@@ -275,53 +275,52 @@ app.put('/profile/:id', async (req, res) => {
 });
 
 
-
-/*app.post('/profile', async (req, res) => {
+app.post('/profile_location/:id', async (req, res) => {
     try {
-        const {
-            account_email,
-            account_password,
-            account_name,
-            account_gender,
-            account_birthday,
-            account_picture,
-            account_telephone,
-            latitude,
-            longitude
-        } = req.body;
-        
-        const hashedPassword = await bcrypt.hash(account_password, saltRounds);
-        const created_at = convertToThailandTime(new Date());
-        const updated_at = convertToThailandTime(new Date());
-        
-        await sequelize.query(
-            `INSERT INTO register_account 
-            (account_email, account_password, account_name, account_gender, account_birthday, 
-            account_picture, account_telephone, latitude, longitude, created_at, updated_at) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        const { latitude, longitude } = req.body;
+        const { id } = req.params;
+
+        console.log("Received ID:", id); //ตรวจสอบค่าที่รับมา
+
+        if (!id || isNaN(id)) {
+            return res.status(400).json({ error: "Invalid user ID" });
+        }
+
+        const [user] = await sequelize.query(
+            `SELECT account_id FROM register_account WHERE account_id = ?`,
             {
-                replacements: [
-                    account_email,
-                    hashedPassword,
-                    account_name,
-                    account_gender,
-                    account_birthday,
-                    account_picture,
-                    account_telephone,
-                    latitude,
-                    longitude,
-                    created_at,
-                    updated_at
-                ],
-                type: QueryTypes.INSERT
+                replacements: [id],
+                type: QueryTypes.SELECT
             }
         );
-        
-        res.status(201).json({ message: 'User registered successfully' });
+
+        console.log("User Found:", user); //ดูว่าพบ user หรือไม่
+
+        if (user) {
+            await sequelize.query(
+                `UPDATE register_account SET latitude = ?, longitude = ? WHERE account_id = ?`,
+                {
+                    replacements: [latitude, longitude, id],
+                    type: QueryTypes.UPDATE
+                }
+            );
+            return res.status(200).json({ message: "Location updated successfully" });
+        } else {
+            await sequelize.query(
+                `INSERT INTO register_account (account_id, latitude, longitude) VALUES (?, ?, ?)`,
+                {
+                    replacements: [id, latitude, longitude],
+                    type: QueryTypes.INSERT
+                }
+            );
+            return res.status(201).json({ message: "Location saved successfully" });
+        }
+
     } catch (err) {
         res.status(500).json({ error: 'Database error', details: err.message });
     }
-});*/
+});
+
 // ----------------------------- qa_picture ----------------------------- //
 
 app.get('/qa_picture' , async (req,res) => {

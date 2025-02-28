@@ -275,44 +275,49 @@ paths:
                     type: string
                   details:
                     type: string
-    #post:
-      #summary: Creates a new profile.
-     # tags: [profile]
-      #requestBody:
-       # required: true 
-       # content:
-        #  application/json:
-           # schema:
-            #  type: object
-            #  required:
-            #    - account_email
-            #    - account_password
-            #    - account_name
-            #  properties:
-             #   account_email:
-              #    type: string
-              #  account_password:
-              #    type: string  
-              #  account_name:
-              #    type: string
-              #  account_gender:
-              #   type: string
-              #  account_birthday:
-              #    type: string
-              #    format: date  
-              #  account_picture:
-              #    type: string   
-              #  account_telephone:
-              #    type: string
-              #  latitude:
-              #    type: number
-              #    format: float                  
-              #  longitude:
-              #    type: number
-              #    format: float     
-    #  responses: 
-    #    '201':
-    #      description: User successfully created
+
+  /profile_location/{id}:
+    post:
+      summary: Update user location
+      description: Update latitude and longitude for a specific user ID
+      tags: [profile]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: User ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                latitude:
+                  type: number
+                  example: 13.7563
+                longitude:
+                  type: number
+                  example: 100.5018
+      responses:
+        200:
+          description: Location updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Location updated successfully"
+        400:
+          description: Invalid input
+        404:
+          description: User not found
+        500:
+          description: Database error
 
 
 #----------------------------- province central -----------------------------#
