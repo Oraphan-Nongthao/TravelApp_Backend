@@ -355,7 +355,7 @@ app.get('/province/:id', async (req, res) => {
 });
 
 // ----------------------------- province central ----------------------------- //
-
+/*
 app.get('/province_central' , async (req,res) => {
     try {
         await checkConnection();
@@ -405,7 +405,7 @@ app.get('/province_south' , async (req,res) => {
         res.status(500).json({ error: err.message });
     }
 })
-
+*/
 
 // ----------------------------- qa_traveling ----------------------------- //
 
