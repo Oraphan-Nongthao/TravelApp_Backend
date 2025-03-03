@@ -333,6 +333,26 @@ app.get('/qa_picture' , async (req,res) => {
     }
 })
 
+// ----------------------------- province ----------------------------- //
+
+app.get('/province/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        await checkConnection(); // ตรวจสอบว่าอันนี้จำเป็นหรือไม่
+        
+        const results = await sequelize.query(
+            'SELECT place_id, place_name, place_picture, place_map, province_th, geography_id FROM location_region INNER JOIN thai_provinces ON location_region.Province_id = thai_provinces.Province_id WHERE geography_id = ?',
+            {
+                replacements: [Number(id)], // แปลง id เป็นตัวเลข
+                type: QueryTypes.SELECT
+            }
+        );
+
+        res.json(results);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
 
 // ----------------------------- province central ----------------------------- //
 

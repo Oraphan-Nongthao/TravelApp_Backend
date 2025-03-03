@@ -319,6 +319,52 @@ paths:
         500:
           description: Database error
 
+#----------------------------- province -----------------------------#
+  /province/{id}:
+    get:
+      summary: Get a geography by ID
+      tags: [province]
+      parameters:
+        - name: id 
+          in: path
+          required: true
+          description: Geography ID
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+      responses:
+        '200':
+          description: Success - Returns the requested data list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    place_id:
+                      type: integer
+                    place_name:
+                      type: string
+                    place_picture:
+                      type: string
+                    place_map:
+                      type: string
+                    province_th:
+                      type: string
+                    geography_id:
+                      type: integer 
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Internal Server Error"
 
 #----------------------------- province central -----------------------------#
 
