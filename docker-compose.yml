@@ -1,0 +1,67 @@
+version: '3.3'
+
+services:
+  frontend:
+    image: nginx:latest
+    ports:
+      - "8081:80"
+    volumes:
+      - /mnt/frontend/TravelApp_Frontend:/usr/share/nginx/html
+    depends_on:
+      - api
+      - mariadb
+
+  api:
+    image: node:14
+    working_dir: /usr/src/app
+    volumes:
+      - /mnt/api/TravelApp_Backend:/usr/src/app
+    command: sh -c "npm install && npm run start"
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+    depends_on:
+      - mariadb
+    networks:
+      - TravelApp_network
+
+  mariadb:
+    image: mariadb:latest
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: Travel_App001
+      MYSQL_DATABASE: travel_app
+      MYSQL_USER: travel_app
+      MYSQL_PASSWORD: Travel_App001
+    command: --bind-address=0.0.0.0 
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - TravelApp_network
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    ports:
+      - "8082:80"
+    environment:
+      PMA_HOST: mariadb
+      PMA_USER: root
+      PMA_PASSWORD: Travel_App001
+    depends_on:
+      - mariadb
+    networks:
+      - TravelApp_network
+
+volumes:
+  mariadb_data:
+
+networks:
+  TravelApp_network:
+    driver: bridge
