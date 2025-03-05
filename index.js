@@ -3,7 +3,7 @@ const { Sequelize, QueryTypes } = require('sequelize');
 const swaggerUi = require('swagger-ui-express');
 const fs = require('fs');
 const YAML = require('yaml');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const dotenv = require('dotenv');
 dotenv.config();
 const jwt = require('jsonwebtoken');
