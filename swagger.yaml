@@ -544,7 +544,30 @@ paths:
                   properties:
                     picture_id:
                       format: int64
+                    theme:
+                      type: string
                     picture_url:
+                      type: string
+
+# ----------------------------- qa_activity ----------------------------- #
+
+  /qa_activity:
+    get:
+      tags: [qa_questions]
+      summary: Returns a list of qa_activate.
+      responses:
+        "200":
+          description: A JSON array of qa_activate
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    picture_id:
+                      format: int64
+                    theme:
                       type: string
 
 #----------------------------- qa_traveling -----------------------------#
