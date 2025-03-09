@@ -23,12 +23,8 @@ const port = process.env.PORT || 3000;
 const saltRounds = 10;
 const axios = require("axios");
 
-const filePath = path.join(__dirname, 'swagger.yaml');
-const file = fs.readFileSync(filePath, 'utf-8'); // เปิดไฟล์ที่ถูกต้อง
-const swaggerDocument = YAML.parse(file); // แปลงไฟล์ 
-console.log(`Reading Swagger file from: ${filePath}`);
-
-
+const file = fs.readFileSync('./swagger.yaml', 'utf-8');
+const swaggerDocument = YAML.parse(file);
 
 app.use(express.json());
 app.use(cors());
