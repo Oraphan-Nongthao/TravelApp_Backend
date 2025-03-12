@@ -44,7 +44,7 @@ const upload = multer({ storage: storage });
 const LONGDO_API_KEY = process.env.LONGDO_API_KEY;
 
 const sequelize = new Sequelize(
-    process.env.DB_NAME,
+    process.env.DB_DATABASE,
     process.env.DB_USER,
     process.env.DB_PASSWORD,
     {
