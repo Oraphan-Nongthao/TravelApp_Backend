@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  db:
+    image: mariadb:latest
+    container_name: mariadb_container
+    environment:
+      MYSQL_ROOT_PASSWORD: Travel_App001
+      MYSQL_DATABASE: travel_app
+      MYSQL_USER: root
+      MYSQL_PASSWORD: Travel_App001
+    volumes:
+      - ./db-data:/var/lib/mysql
+      - ./init-db:/docker-entrypoint-initdb.d
+    ports:
+      - "3306:3306"
+    restart: always
+    networks:
+      - my_network
+
+  api:
+    build: .
+    container_name: node_api
+    environment:
+      DB_HOST: db
+      DB_USER: root
+      DB_PASSWORD: Travel_App001
+      DB_DATABASE: travel_app
+      PORT: 3000
+    ports:
+      - '3000:3000'
+    depends_on:
+      - db
+    networks:
+      - my_network
+    volumes:
+      - .:/app
+    working_dir: /usr/src/app
+    command: ["npm", "run", "dev"]
+
+networks:
+  my_network:
+    driver: bridge
