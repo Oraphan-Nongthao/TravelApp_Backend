@@ -11,12 +11,11 @@ const cors = require('cors');
 const multer = require('multer');
 const path = require('path');
 
-/*
 const OpenAI = require("openai");
 const openai = new OpenAI({
     apiKey: process.env.OPEN_AI_KEY,
 });
-*/
+
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -446,48 +445,386 @@ app.get('/qa_distance' , async (req,res) => {
 })
 
 
-// ----------------------------- Test longdo ----------------------------- //
-
-app.get("/search_nearby", async (req, res) => {
-    try {
-        const { postcode , radius } = req.query; // รับค่าพิกัดและระยะทาง
-        if ( !postcode || !radius) {
-            return res.status(400).json({ error: "Missing required parameters" });
+// ✅Test2 OpenAI
+async function getRecommendedPlaces(data) {
+    // ฟังก์ชันช่วยแปลงข้อมูลจากตัวเลขเป็นข้อความ
+    function translateChoice(choice, type) {
+        switch (type) {
+            case 'trip_id':
+                switch (choice) {
+                    case 1: return 'เดินทางคนเดียว';
+                    case 2: return 'เดินทางกับครอบครัว';
+                    case 3: return 'เดินทางกับแฟน';
+                    case 4: return 'เดินทางกับเพื่อน';
+                    default: return 'ไม่ระบุ';
+                }
+            case 'distance_id':
+                switch (choice) {
+                    case 1: return '0-5 กิโลเมตร';
+                    case 2: return '5-10 กิโลเมตร';
+                    case 3: return '10-15 กิโลเมตร';
+                    case 4: return '15-20 กิโลเมตร';
+                    default: return 'ไม่ระบุ';
+                }
+            case 'location_interest_id':
+                switch (choice) {
+                    case 1: return 'คาเฟ่และกิจกรรมต่างๆ';
+                    case 2: return 'สวนสาธารณะ';
+                    case 3: return 'สวนสนุกและสวนน้ำ';
+                    case 4: return 'งานศิลปะและนิทรรศการ';
+                    case 5: return 'สปาและออนเซ็น';
+                    case 6: return 'ห้างสรรพสินค้า';
+                    case 7: return 'ร้านอาหารและเครื่องดื่ม';
+                    case 8: return 'วัดและสถานที่โบราณ';
+                    default: return 'ไม่ระบุ';
+                }
+            case 'activity_interest_id':
+                if (!Array.isArray(choice)) return 'ไม่ระบุ';
+                return choice.map(activity => {
+                    switch (activity) {
+                        case 1: return 'คาเฟ่และกิจกรรมต่างๆ';
+                        case 2: return 'สวนสาธารณะ';
+                        case 3: return 'สวนสนุกและสวนน้ำ';
+                        case 4: return 'งานศิลปะและนิทรรศการ';
+                        case 5: return 'สปาและออนเซ็น';
+                        case 6: return 'ห้างสรรพสินค้า';
+                        case 7: return 'ร้านอาหารและเครื่องดื่ม';
+                        case 8: return 'วัดและสถานที่โบราณ';
+                        default: return 'ไม่ระบุ';
+                    }
+                }).join(', ');
+            default:
+                return choice || 'ไม่ระบุ';
         }
-        
-        // เรียก API Longdo Map ค้นหาสถานที่รอบๆ จุดที่กำหนด
-        const response = await axios.get("https://api.longdo.com/POIService/json/search", {
-            params: {
-                key: LONGDO_API_KEY,
-                postcode, 
-                limit: 5, // จำนวนผลลัพธ์สูงสุด
-                span: radius, // ระยะทางค้นหา (เมตร)
-                tag: "สวนสาธารณะ" // ระบุประเภทสถานที่
-            },
-        });
+    }
 
-        res.json(response.data);
+    // แปลงข้อมูลที่ผู้ใช้เลือกจากตัวเลขเป็นข้อความ
+    const translatedData = {
+        trip_id: translateChoice(data.trip_id, 'trip_id'),
+        distance_id: translateChoice(data.distance_id, 'distance_id'),
+        budget: data.budget || 'ไม่ระบุ',
+        location_interest_id: translateChoice(data.location_interest_id, 'location_interest_id'),
+        activity_interest_id: translateChoice(data.activity_interest_id, 'activity_interest_id')
+    };
+
+    // ฟังก์ชันแปลงชื่อสถานที่จากภาษาไทยเป็นภาษาอังกฤษ
+    async function translateToEnglish(thaiName) {
+        try {
+            // ใช้ OpenAI API เพื่อแปลชื่อสถานที่
+            const response = await openai.chat.completions.create({
+                model: "gpt-4o",
+                messages: [{ 
+                    role: "user", 
+                    content: `แปลชื่อสถานที่ท่องเที่ยวในกรุงเทพฯ นี้เป็นภาษาอังกฤษ (ให้ตอบเฉพาะชื่อภาษาอังกฤษเท่านั้น ไม่ต้องมีข้อความอื่น): ${thaiName}` 
+                }],
+                max_tokens: 1000
+            });
+            
+            // ดึงคำตอบและตัดช่องว่าง
+            const englishName = response.choices[0].message?.content?.trim() || thaiName;
+            console.log(`Translated: ${thaiName} -> ${englishName}`);
+            return englishName;
+        } catch (error) {
+            console.error("Error translating place name:", error);
+            return thaiName; // หากแปลไม่สำเร็จ ให้ใช้ชื่อเดิม
+        }
+    }
+
+    // ฟังก์ชันดึงรูปภาพจาก Wikimedia API
+    async function getWikimediaImage(placeName) {
+        try {
+            // แปลชื่อสถานที่เป็นภาษาอังกฤษก่อน
+            const englishName = await translateToEnglish(placeName);
+            
+            // สร้างคำค้นหาที่เฉพาะเจาะจงมากขึ้น
+            const searchTerms = [
+                `${englishName} Bangkok Thailand`,
+                `${englishName} Bangkok`,
+                `${englishName} Thailand tourism`,
+                englishName
+            ];
+            
+            // ลองค้นหาด้วยคำค้นหาต่างๆ จนกว่าจะพบรูปภาพ
+            for (const searchTerm of searchTerms) {
+                // สร้าง URL สำหรับ API request
+                const encodedSearchTerm = encodeURIComponent(searchTerm);
+                const apiUrl = `https://commons.wikimedia.org/w/api.php?action=query&list=search&srsearch=${encodedSearchTerm}&srnamespace=6&format=json&origin=*`;
+                
+                // ส่ง request ไปยัง Wikimedia API
+                const response = await fetch(apiUrl);
+                const data = await response.json();
+                
+                // ตรวจสอบว่ามีผลลัพธ์หรือไม่
+                if (data.query && data.query.search && data.query.search.length > 0) {
+                    // ดึงชื่อไฟล์ภาพจากผลลัพธ์แรก
+                    const fileName = data.query.search[0].title.replace('File:', '');
+                    
+                    // ตรวจสอบความเกี่ยวข้องของรูปภาพ
+                    if (fileName.toLowerCase().includes(englishName.toLowerCase())) {
+                        // สร้าง URL สำหรับรูปภาพ (ดึงข้อมูล URL จริงของรูปภาพ)
+                        const imageInfoUrl = `https://commons.wikimedia.org/w/api.php?action=query&titles=File:${encodeURIComponent(fileName)}&prop=imageinfo&iiprop=url&format=json&origin=*`;
+                        
+                        const imageResponse = await fetch(imageInfoUrl);
+                        const imageData = await imageResponse.json();
+                        
+                        // ดึง URL ของรูปภาพ
+                        const pages = imageData.query.pages;
+                        const pageId = Object.keys(pages)[0];
+                        
+                        if (pages[pageId].imageinfo && pages[pageId].imageinfo.length > 0) {
+                            console.log(`Found image for ${placeName} using search term: ${searchTerm}`);
+                            return pages[pageId].imageinfo[0].url;
+                        }
+                    }
+                }
+            }
+            
+            // หากไม่พบรูปภาพในทุกคำค้นหา ให้ใช้รูปภาพตัวอย่าง
+            console.log(`No image found for ${placeName}`);
+            return `https://f.ptcdn.info/187/024/000/1412581961-PantipPatr-o.jpg`;
+        } catch (error) {
+            console.error("Error fetching Wikimedia image:", error);
+            // กรณีเกิดข้อผิดพลาด ให้ใช้รูปภาพตัวอย่าง
+            return `https://f.ptcdn.info/187/024/000/1412581961-PantipPatr-o.jpg`;
+        }
+    }
+
+    // เก็บรูปภาพที่ใช้แล้วเพื่อป้องกันการซ้ำซ้อน
+    const usedImages = new Set();
+
+    // สร้าง prompt เพื่อขอคำแนะนำจาก OpenAI
+    const prompt = `
+    คุณได้เลือกคำตอบดังนี้:
+    - ประเภทการเดินทาง: ${translatedData.trip_id}
+    - ระยะทาง: ${translatedData.distance_id}
+    - งบประมาณ: ${translatedData.budget} บาท
+    - สถานที่ที่สนใจ: ${translatedData.location_interest_id}
+    - กิจกรรมที่สนใจ: ${translatedData.activity_interest_id}
+
+    โปรดแนะนำสถานที่ท่องเที่ยวในกรุงเทพมหานครที่เหมาะสม 5 สถานที่เท่านั้น โดยระบุข้อมูลแต่ละสถานที่ดังนี้:
+    1. ชื่อสถานที่ (event_name): <ชื่อสถานที่>
+       รายละเอียดสถานที่ (event_description): <รายละเอียดสั้นๆ เกี่ยวกับสถานที่>
+       ที่ตั้งสถานที่ (results_location): <ที่ตั้งสถานที่>
+       วันเปิดบริการ (open_day): <วันเปิดบริการ>
+       เวลาเปิด-ปิด (time_schedule): <เวลาเปิด-ปิด>
+       ระยะทางจากผู้ใช้ (distance): <ระยะทางจากผู้ใช้>
+    `;
+
+    try {
+        // เรียกใช้ OpenAI API
+        const response = await openai.chat.completions.create({
+            model: "gpt-4o",
+            messages: [{ role: "user", content: prompt }],
+            max_tokens: 5000
+        });
+    
+        // ตรวจสอบ response ก่อนใช้
+        if (!response.choices || response.choices.length === 0) {
+            throw new Error("No response from OpenAI API");
+        }
+    
+        // ดึงคำตอบจาก API
+        const recommendation = response.choices[0].message?.content?.trim() || "ไม่พบคำแนะนำ";
+        console.log("OpenAI Response:", recommendation);
+    
+        // แยกคำแนะนำออกเป็น 5 สถานที่
+        const recommendations = recommendation.split('\n\n').filter(rec => rec.trim() !== '');
+    
+        // สร้างผลลัพธ์สำหรับแต่ละสถานที่
+        const results = [];
+        
+        // วนลูปเพื่อดึงรูปภาพสำหรับแต่ละสถานที่
+        for (let i = 0; i < recommendations.length; i++) {
+            const rec = recommendations[i];
+            const lines = rec.split('\n');
+            const eventName = lines[0]?.split(': ')[1]?.trim() || `สถานที่ ${i + 1}`;
+            const eventDescription = lines[1]?.split(': ')[1]?.trim() || 'ไม่มีรายละเอียด';
+            const resultsLocation = lines[2]?.split(': ')[1]?.trim() || 'ไม่ระบุที่ตั้ง';
+            const openDay = lines[3]?.split(': ')[1]?.trim() || 'เปิดบริการทุกวัน';
+            const timeSchedule = lines[4]?.split(': ')[1]?.trim() || '10:00-22:00';
+            const distance = lines[5]?.split(': ')[1]?.trim() || translatedData.distance_id;
+            
+            // ดึงรูปภาพจาก Wikimedia API โดยใช้ชื่อสถานที่
+            let resultsImgUrl = await getWikimediaImage(eventName);
+            
+            // ตรวจสอบว่ารูปภาพนี้ถูกใช้แล้วหรือไม่
+            let attemptCount = 0;
+            while (usedImages.has(resultsImgUrl) && attemptCount < 3) {
+                console.log(`Image duplicate detected for ${eventName}, trying alternative...`);
+                // ลองค้นหาอีกครั้งโดยเพิ่มคำอื่นๆ
+                resultsImgUrl = await getWikimediaImage(eventName + " attraction " + attemptCount);
+                attemptCount++;
+            }
+            
+            // เพิ่มรูปภาพที่ใช้แล้วเข้าไปในเซต
+            usedImages.add(resultsImgUrl);
+    
+            // กำหนดข้อมูลแต่ละสถานที่
+            results.push({
+                results_id: i + 1,
+                event_name: eventName,
+                event_description: eventDescription,
+                open_day: openDay,
+                time_schedule: timeSchedule,
+                results_location: resultsLocation,
+                results_img_url: resultsImgUrl,
+                distance: distance
+            });
+        }
+        return results;
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error("Error fetching recommendations:", error);
+        throw error;
+    }
+}
+
+// ✅ฟังก์ชันบันทึกผลลัพธ์ลงใน qa_results
+async function saveResultsToDb(results, account_id) {
+    const query = `
+        INSERT INTO qa_results 
+        (account_id, event_name, event_description, open_day, results_location, time_schedule, results_img_url, distance)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `;
+    try {
+        for (const result of results) {
+            // บันทึกข้อมูลลงในฐานข้อมูล
+            await sequelize.Promise().execute(query, [
+                account_id, // ใช้ account_id ที่ส่งมา
+                result.event_name || null,
+                result.event_description || null,
+                result.open_day || null,
+                result.results_location || null,
+                result.time_schedule || null,
+                result.results_img_url || null,
+                result.distance || null
+            ]);
+        }
+        console.log("Results saved successfully!");
+    } catch (error) {
+        console.error("Error saving results to database:", error);
+        throw error; // หรือจัดการข้อผิดพลาดตามที่คุณต้องการ
+    }
+}
+
+// ✅ดึงข้อมูล qa_transaction
+app.get('/qa_transaction', async (req, res) => {
+    const query = `
+         SELECT
+            qa_transaction.qa_transaction_id,
+            qa_transaction.account_id,
+            qa_traveling.traveling_choice,
+            qa_distance.distance_km,
+            qa_transaction.budget,
+            qa_picture.theme AS location_interest,
+            GROUP_CONCAT(qa_activity_picture.theme) AS activity_interest,
+            qa_transaction.longitude,
+            qa_transaction.latitude
+        FROM qa_transaction
+        LEFT JOIN qa_traveling ON qa_transaction.trip_id = qa_traveling.traveling_id
+        LEFT JOIN qa_distance ON qa_transaction.distance_id = qa_distance.distance_id
+        LEFT JOIN qa_picture ON qa_transaction.location_interest_id = qa_picture.picture_id
+        LEFT JOIN qa_picture AS qa_activity_picture
+            ON FIND_IN_SET(qa_activity_picture.picture_id, REPLACE(REPLACE(qa_transaction.activity_interest_id, '[', ''), ']', ''))
+        GROUP BY
+            qa_transaction.qa_transaction_id,
+            qa_transaction.account_id,
+            qa_traveling.traveling_choice,
+            qa_distance.distance_km,
+            qa_transaction.budget,
+            qa_picture.theme,
+            qa_transaction.longitude,
+            qa_transaction.latitude;
+    `;
+
+    sequelize.query(query, function(err, results) {
+        if (err) {
+            console.error("Database error:", err);
+            res.status(500).json({ error: "Database query failed" });
+        } else {
+            res.json(results);
+        }
+    });
+});
+
+// ✅บันทึกข้อมูลคำตอบของ QA จาก User
+app.post('/qa_transaction', async (req, res) => {
+    try {
+        const { latitude, longitude, trip_id, distance_id, budget, location_interest_id, activity_interest_id } = req.body;
+
+        // ตรวจสอบข้อมูลที่จำเป็น
+        if (
+            !latitude || !longitude || !trip_id || !distance_id || !budget || !location_interest_id || !activity_interest_id
+        ) {
+            return res.status(400).json({ success: false, message: "Missing required fields." });
+        }
+
+        // ตรวจสอบให้แน่ใจว่า activity_interest_id เป็น Array
+        if (!Array.isArray(activity_interest_id)) {
+            return res.status(400).json({ success: false, message: "activity_interest_id must be an array." });
+        }
+
+        // แปลง activity_interest_id เป็น JSON string
+        const activityInterestJSON = JSON.stringify(activity_interest_id);
+
+        // กำหนดค่า account_id เป็น 0
+        let account_id = 0;
+
+        // บันทึกข้อมูลลงในฐานข้อมูล
+        const sql = 'INSERT INTO qa_transaction (account_id, latitude, longitude, trip_id, distance_id, budget, location_interest_id, activity_interest_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
+        const result = await sequelize.query(sql, [account_id, latitude, longitude, trip_id, distance_id, budget, location_interest_id, activityInterestJSON]);
+
+        // ตรวจสอบว่าได้บันทึกข้อมูลหรือไม่
+        if (result.affectedRows > 0) {
+            // หลังจากบันทึกเสร็จให้ดึง account_id จากฐานข้อมูล
+            account_id = result.insertId;
+
+            // อัปเดต record ด้วย account_id ที่ถูกต้อง
+            const updateSql = 'UPDATE qa_transaction SET account_id = ? WHERE qa_transaction_id = ?';
+            await sequelize.query(updateSql, [account_id, result.insertId]);
+
+            // ส่งข้อมูลไปประมวลผลด้วย OpenAI
+            const openAIResults = await getRecommendedPlaces({
+                latitude,
+                longitude,
+                trip_id,
+                distance_id,
+                budget,
+                location_interest_id,
+                activity_interest_id
+            });
+
+            // บันทึกผลลัพธ์ลงใน qa_results
+            await saveResultsToDb(openAIResults, account_id);
+
+            res.json({
+                success: true,
+                message: "Transaction saved and account_id updated successfully!",
+                data: { account_id, latitude, longitude, trip_id, distance_id, budget, location_interest_id, activity_interest_id }
+            });
+        } else {
+            res.status(500).json({ success: false, message: "Failed to save transaction." });
+        }
+
+    } catch (error) {
+        console.error("Error saving transaction:", error);
+        res.status(500).json({ success: false, error: "Internal server error." });
     }
 });
 
+// ✅ดึงข้อมูล qa_results
+app.get('/qa_results', async (req, res) => {
+    const query = `SELECT * FROM qa_results`;
 
-/*const completion = openai.chat.completions.create({
-// ----------------------------- Open AI ----------------------------- //
+    sequelize.query(query, function(err, results) {
+        if (err) {
+            console.error("Database error:", err);
+            res.status(500).json({ error: "Database query failed" });
+        } else {
+            res.json(results);
+        }
+    });
+});
 
-    model: "gpt-4o-mini",
-    store: true,
-    messages: [
-        {"role": "user", "content": "ฉันชอบเดินทาง เเนะนำสถานที่เที่ยวหน่อยเเค่ 5 สถานที่ในกรุงเทพ"},
-        ],
-        max_tokens: 400,
-        });
-        
-        
-        completion.then((result) => console.log(result.choices[0].message)
-        );
-*/
 
 app.listen(port, () => {
     console.log(`App listening on port ${port}`);
