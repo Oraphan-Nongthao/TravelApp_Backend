@@ -612,45 +612,124 @@ paths:
                     distance_km:
                       type: string
 
- #----------------------------- test_longdo -----------------------------#
+ #----------------------------- qa_transaction -----------------------------#
 
-  /search_nearby:
+  /qa_transaction:
     get:
-      tags: [Test longdo]
-      summary: ค้นหาสถานที่ใกล้เคียง
-      description: ดึงข้อมูลสถานที่รอบๆ ตามพิกัดที่กำหนด
-      parameters:
-        - name: postcode
-          in: query
-          required: true
-          schema:
-            type: number
-          description: รหัสไปรษณีย์ของสถานที่ที่ต้องการค้นหา
-        - name: radius
-          in: query
-          required: true
-          schema:
-            type: integer
-          description: ระยะทางค้นหา (เมตร)
+      summary: ดึงข้อมูลทั้งหมดจาก qa_transaction
+      tags: [QA]
+      description: ดึงข้อมูลทั้งหมดจาก qa_transaction
       responses:
-        "200":
-          description: ข้อมูลสถานที่ที่พบ
+        200:
+          description: สำเร็จ
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    name:
-                      type: string
-                    address:
-                      type: string
-                    lat:
-                      type: number
-                    lon:
-                      type: number
-        "400":
-          description: ข้อมูลที่ส่งมาไม่ถูกต้อง
-        "500":
-          description: เซิร์ฟเวอร์มีปัญหา
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    type: array
+
+        500:
+          description: เกิดข้อผิดพลาดในการประมวลผล
+    post:
+      summary: บันทึกข้อมูลคำตอบจากผู้ใช้
+      tags: [QA]
+      description: บันทึกข้อมูลคำตอบจากผู้ใช้ลงในตาราง qa_transaction และประมวลผลด้วย openAI ส่งผลลัพธ์ไปยัง qa_results  
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                latitude:
+                  type: number
+                  description: ละติจูดของผู้ใช้
+                longitude:
+                  type: number
+                  description: ลองจิจูดของผู้ใช้
+                trip_id:
+                  type: integer
+                  description: รหัสการเดินทาง
+                distance_id:
+                  type: integer
+                  description: รหัสระยะทาง
+                budget:
+                  type: number
+                  description: งบประมาณ
+                location_interest_id:
+                  type: number
+                  description: รหัสสถานที่ที่สนใจ
+                activity_interest_id:
+                  type: array
+                  items:
+                    type: integer
+                  description: รหัสกิจกรรมที่สนใจ (เก็บเป็น Array)
+      responses:
+        200:
+          description: สำเร็จ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    type: object
+                    properties:
+                      qa_transaction_id:
+                        type: integer
+                        description: รหัสธุรกรรมที่สร้างขึ้น
+                      account_id:
+                        type: integer
+                        description: รหัสบัญชีที่สร้างอัตโนมัติให้ตรงกับ qa_transaction_id
+                      latitude:
+                        type: number
+                      longitude:
+                        type: number
+                      trip_id:
+                        type: integer
+                      distance_id:
+                        type: integer
+                      budget:
+                        type: number
+                      location_interest_id:
+                        type: number
+                      activity_interest_id:
+                        type: array
+                        items:
+                          type: integer
+        400:
+          description: ข้อมูลไม่ครบถ้วน
+        500:
+          description: เกิดข้อผิดพลาดในการประมวลผล
+
+ #----------------------------- qa_results -----------------------------#
+
+  /qa_results:
+    get:
+      summary: ดึงข้อมูลทั้งหมดจาก qa_results
+      tags: [QA Results]
+      description: ดึงข้อมูลทั้งหมดจาก qa_results
+      responses:
+        200:
+          description: สำเร็จ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+                  data:
+                    type: array
