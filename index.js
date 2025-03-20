@@ -749,17 +749,34 @@ app.post('/qa_transaction', async (req, res) => {
 });
 
 // ✅ดึงข้อมูล qa_results
+// ✅ดึงข้อมูล qa_results
 app.get('/qa_results', async (req, res) => {
-    const query = `SELECT * FROM qa_results`;
+    try {
+        const query = `SELECT * FROM qa_results`;
 
-    sequelize.query(query, function(err, results) {
-        if (err) {
-            console.error("Database error:", err);
-            res.status(500).json({ error: "Database query failed" });
-        } else {
-            res.json(results);
-        }
-    });
+        // ใช้ async/await และ QueryTypes.SELECT
+        const results = await sequelize.query(query, { type: Sequelize.QueryTypes.SELECT });
+
+        res.json(results);
+    } catch (error) {
+        console.error("Database error:", error);
+        res.status(500).json({ error: "Database query failed" });
+    }
+});
+
+// ✅ดึงข้อมูล qa_results
+app.get('/qa_results', async (req, res) => {
+    try {
+        const query = `SELECT * FROM qa_results`;
+
+        // ใช้ async/await และ QueryTypes.SELECT
+        const results = await sequelize.query(query, { type: Sequelize.QueryTypes.SELECT });
+
+        res.json(results);
+    } catch (error) {
+        console.error("Database error:", error);
+        res.status(500).json({ error: "Database query failed" });
+    }
 });
 
 
