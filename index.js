@@ -685,53 +685,63 @@ app.get('/qa_transaction', async (req, res) => {
 
 // ✅บันทึกข้อมูลคำตอบของ QA จาก User
 app.post('/qa_transaction', async (req, res) => {
+    const transaction = await sequelize.transaction(); // ใช้ transaction
     try {
+        console.log("🟢 Start Transaction"); // ตรวจสอบว่าถึงจุดนี้
+
         const { latitude, longitude, trip_id, distance_id, budget, location_interest_id, activity_interest_id } = req.body;
 
-        // ตรวจสอบข้อมูลที่จำเป็น
-        if (
-            !latitude || !longitude || !trip_id || !distance_id || !budget || !location_interest_id || !activity_interest_id
-        ) {
-            return res.status(400).json({ success: false, message: "Missing required fields." });
+        if (!latitude || !longitude || !trip_id || !distance_id || !budget || !location_interest_id || !Array.isArray(activity_interest_id)) {
+            return res.status(400).json({ success: false, message: "Missing or invalid required fields." });
         }
 
-        // ตรวจสอบให้แน่ใจว่า activity_interest_id เป็น Array
-        if (!Array.isArray(activity_interest_id)) {
-            return res.status(400).json({ success: false, message: "activity_interest_id must be an array." });
-        }
+        console.log("🟢 Data validated:", req.body);
 
-        // แปลง activity_interest_id เป็น JSON string
         const activityInterestJSON = JSON.stringify(activity_interest_id);
-
-        // กำหนดค่า account_id เป็น 0
         let account_id = 0;
 
-        // บันทึกข้อมูลลงในฐานข้อมูล
-        const sql = 'INSERT INTO qa_transaction (account_id, latitude, longitude, trip_id, distance_id, budget, location_interest_id, activity_interest_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
-        const result = await sequelize.query(sql, [account_id, latitude, longitude, trip_id, distance_id, budget, location_interest_id, activityInterestJSON]);
+        // ✅ บันทึกข้อมูลลงในฐานข้อมูล
+        const sql = `
+            INSERT INTO qa_transaction (account_id, latitude, longitude, trip_id, distance_id, budget, location_interest_id, activity_interest_id) 
+            VALUES (:account_id, :latitude, :longitude, :trip_id, :distance_id, :budget, :location_interest_id, :activity_interest_id)
+        `;
 
-        // ตรวจสอบว่าได้บันทึกข้อมูลหรือไม่
-        if (result.affectedRows > 0) {
-            // หลังจากบันทึกเสร็จให้ดึง account_id จากฐานข้อมูล
-            account_id = result.insertId;
+        const [result] = await sequelize.query(sql, {
+            replacements: { account_id, latitude, longitude, trip_id, distance_id, budget, location_interest_id, activity_interest_id: activityInterestJSON },
+            type: Sequelize.QueryTypes.INSERT,
+            transaction
+        });
 
-            // อัปเดต record ด้วย account_id ที่ถูกต้อง
-            const updateSql = 'UPDATE qa_transaction SET account_id = ? WHERE qa_transaction_id = ?';
-            await sequelize.query(updateSql, [account_id, result.insertId]);
+        if (result) {
+            account_id = result; // Sequelize อาจคืนค่า ID เป็นตัวแปรแรกของอาร์เรย์
 
-            // ส่งข้อมูลไปประมวลผลด้วย OpenAI
-            const openAIResults = await getRecommendedPlaces({
-                latitude,
-                longitude,
-                trip_id,
-                distance_id,
-                budget,
-                location_interest_id,
-                activity_interest_id
+            // ✅ อัปเดต account_id ใน transaction
+            const updateSql = `UPDATE qa_transaction SET account_id = :account_id WHERE qa_transaction_id = :qa_transaction_id`;
+            await sequelize.query(updateSql, {
+                replacements: { account_id, qa_transaction_id: account_id },
+                type: Sequelize.QueryTypes.UPDATE,
+                transaction
             });
 
-            // บันทึกผลลัพธ์ลงใน qa_results
-            await saveResultsToDb(openAIResults, account_id);
+            // ✅ Commit ข้อมูล
+            await transaction.commit();
+
+            // ✅ ส่งข้อมูลไป OpenAI (แยก try/catch เพื่อให้แน่ใจว่าถ้า AI พลาดก็ยังบันทึกข้อมูลได้)
+            try {
+                const openAIResults = await getRecommendedPlaces({
+                    latitude,
+                    longitude,
+                    trip_id,
+                    distance_id,
+                    budget,
+                    location_interest_id,
+                    activity_interest_id
+                });
+
+                await saveResultsToDb(openAIResults, account_id);
+            } catch (aiError) {
+                console.error("OpenAI processing error:", aiError);
+            }
 
             res.json({
                 success: true,
@@ -739,10 +749,12 @@ app.post('/qa_transaction', async (req, res) => {
                 data: { account_id, latitude, longitude, trip_id, distance_id, budget, location_interest_id, activity_interest_id }
             });
         } else {
+            await transaction.rollback();
             res.status(500).json({ success: false, message: "Failed to save transaction." });
         }
 
     } catch (error) {
+        await transaction.rollback();
         console.error("Error saving transaction:", error);
         res.status(500).json({ success: false, error: "Internal server error." });
     }
