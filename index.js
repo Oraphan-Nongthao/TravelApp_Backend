@@ -40,7 +40,6 @@ const storage = multer.diskStorage({
 });
 
 const upload = multer({ storage: storage });
-const LONGDO_API_KEY = process.env.LONGDO_API_KEY;
 
 const sequelize = new Sequelize(
     process.env.DB_DATABASE,
@@ -125,16 +124,6 @@ app.post('/signup', async (req, res) => {
         res.status(500).json({ error: 'Database error', details: err.message });
     }
 });
-
-/*app.get('/signup', async (req, res) => {
-    try {
-        await checkConnection();
-        const results = await sequelize.query('SELECT * FROM register_account', { type: QueryTypes.SELECT });
-        res.json(results);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});*/
 
 // ----------------------------- signin ----------------------------- //
 
