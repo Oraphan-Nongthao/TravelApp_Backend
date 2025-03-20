@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Mar 12, 2025 at 09:55 AM
+-- Generation Time: Mar 20, 2025 at 05:19 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -163,6 +163,25 @@ INSERT INTO `qa_picture` (`picture_id`, `theme`, `picture_url`) VALUES
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `qa_results`
+--
+
+CREATE TABLE `qa_results` (
+  `results_id` int(11) NOT NULL,
+  `account_id` int(11) NOT NULL,
+  `event_name` varchar(255) NOT NULL,
+  `event_description` text NOT NULL,
+  `open_day` varchar(50) NOT NULL,
+  `results_location` varchar(255) NOT NULL,
+  `time_schedule` varchar(255) NOT NULL,
+  `results_img_url` text NOT NULL,
+  `distance` varchar(50) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `qa_transaction`
 --
 
@@ -173,17 +192,10 @@ CREATE TABLE `qa_transaction` (
   `distance_id` int(11) NOT NULL,
   `budget` int(11) NOT NULL,
   `location_interest_id` int(11) NOT NULL,
-  `activity_interest_id` int(11) NOT NULL,
+  `activity_interest_id` text NOT NULL,
   `latitude` decimal(9,6) DEFAULT NULL,
   `longitude` decimal(9,6) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `qa_transaction`
---
-
-INSERT INTO `qa_transaction` (`qa_transaction_id`, `account_id`, `trip_id`, `distance_id`, `budget`, `location_interest_id`, `activity_interest_id`, `latitude`, `longitude`) VALUES
-(1, 1, 1, 1, 500, 2, 1, 13.740804, 100.589933);
 
 -- --------------------------------------------------------
 
@@ -8864,6 +8876,12 @@ ALTER TABLE `qa_picture`
   ADD PRIMARY KEY (`picture_id`);
 
 --
+-- Indexes for table `qa_results`
+--
+ALTER TABLE `qa_results`
+  ADD PRIMARY KEY (`results_id`);
+
+--
 -- Indexes for table `qa_transaction`
 --
 ALTER TABLE `qa_transaction`
@@ -8934,10 +8952,16 @@ ALTER TABLE `qa_picture`
   MODIFY `picture_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
+-- AUTO_INCREMENT for table `qa_results`
+--
+ALTER TABLE `qa_results`
+  MODIFY `results_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `qa_transaction`
 --
 ALTER TABLE `qa_transaction`
-  MODIFY `qa_transaction_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `qa_transaction_id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `qa_traveling`
