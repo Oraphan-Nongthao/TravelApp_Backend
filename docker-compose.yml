@@ -10,8 +10,8 @@ services:
       MYSQL_USER: root
       MYSQL_PASSWORD: Travel_App001
     volumes:
-      - ./db-data:/var/lib/mysql
-      - ./init-db:/docker-entrypoint-initdb.d
+      - ./db-data:/var/lib/mysql  # เชื่อมโฟลเดอร์ db-data กับ /var/lib/mysql
+      - ./init-db:/docker-entrypoint-initdb.d # โหลดไฟล์ SQL
     ports:
       - "3306:3306"
     restart: always
