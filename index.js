@@ -367,58 +367,6 @@ app.get('/province/:id', async (req, res) => {
     }
 });
 
-// ----------------------------- province central ----------------------------- //
-/*
-app.get('/province_central' , async (req,res) => {
-    try {
-        await checkConnection();
-        const results = await sequelize.query('SELECT place_id , place_name , place_picture , place_map ,province_th , geography_id FROM `location_region` INNER JOIN thai_provinces ON location_region.Province_id = thai_provinces.Province_id WHERE geography_id = 2'
-        , { type: QueryTypes.SELECT });
-        res.json(results);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-})
-
-// ----------------------------- province Northern ----------------------------- //
-
-app.get('/province_northern' , async (req,res) => {
-    try {
-        await checkConnection();
-        const results = await sequelize.query('SELECT place_id , place_name , place_picture , place_map ,province_th , geography_id FROM `location_region` INNER JOIN thai_provinces ON location_region.Province_id = thai_provinces.Province_id WHERE geography_id = 1'
-        , { type: QueryTypes.SELECT });
-        res.json(results);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-})
-
-// ----------------------------- province Northeast ----------------------------- //
-
-app.get('/province_northeast' , async (req,res) => {
-    try {
-        await checkConnection();
-        const results = await sequelize.query('SELECT place_id , place_name , place_picture , place_map ,province_th , geography_id FROM `location_region` INNER JOIN thai_provinces ON location_region.Province_id = thai_provinces.Province_id WHERE geography_id = 3'
-        , { type: QueryTypes.SELECT });
-        res.json(results);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-})
-
-// ----------------------------- province South ----------------------------- //
-
-app.get('/province_south' , async (req,res) => {
-    try {
-        await checkConnection();
-        const results = await sequelize.query('SELECT place_id , place_name , place_picture , place_map ,province_th , geography_id FROM `location_region` INNER JOIN thai_provinces ON location_region.Province_id = thai_provinces.Province_id WHERE geography_id = 6'
-        , { type: QueryTypes.SELECT });
-        res.json(results);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-})
-*/
 
 // ----------------------------- qa_traveling ----------------------------- //
 
