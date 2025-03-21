@@ -837,6 +837,7 @@ app.get('/qa_results', async (req, res) => {
 });
 
 
-app.listen(port, '0.0.0.0', () => {
-    console.log(`App listening on port ${port}`);
+console.log(`Starting server on port ${port}...`);
+app.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
 });
