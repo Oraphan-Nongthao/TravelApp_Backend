@@ -1,7 +1,6 @@
 const express = require('express');
 const { Sequelize, QueryTypes } = require('sequelize');
 const swaggerUi = require('swagger-ui-express');
-const swaggerJsdoc = require("swagger-jsdoc");
 const fs = require('fs');
 const YAML = require('yaml');
 const bcrypt = require('bcryptjs');
