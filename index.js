@@ -11,10 +11,6 @@ const cors = require('cors');
 const multer = require('multer');
 const path = require('path');
 
-const OpenAI = require("openai");
-
-
-
 const app = express();
 const port = process.env.PORT || 3000;
 const saltRounds = 10;
@@ -28,9 +24,11 @@ app.use(cors());
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 // OpenAI Instance
+const OpenAI = require("openai");
 const openai = new OpenAI({
     apiKey: process.env.OPEN_AI_KEY,  // ตรวจสอบว่าโหลดค่า API Key ถูกต้อง
 });
+
 
 // กำหนดที่เก็บไฟล์
 const storage = multer.diskStorage({
