@@ -6,6 +6,7 @@ info:
 
 servers:
   - url: http://localhost:3000
+  
     description: Localhost server on port 3000
 
 paths:

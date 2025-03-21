@@ -1,6 +1,7 @@
 const express = require('express');
 const { Sequelize, QueryTypes } = require('sequelize');
 const swaggerUi = require('swagger-ui-express');
+const swaggerJsdoc = require("swagger-jsdoc");
 const fs = require('fs');
 const YAML = require('yaml');
 const bcrypt = require('bcryptjs');
@@ -842,6 +843,6 @@ app.get('/qa_results', async (req, res) => {
 });
 
 
-app.listen(port, () => {
+app.listen(port, '0.0.0.0', () => {
     console.log(`App listening on port ${port}`);
 });
