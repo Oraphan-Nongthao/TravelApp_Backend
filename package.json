@@ -26,6 +26,7 @@
     "openai": "^4.89.0",
     "sequelize": "^6.37.5",
     "swagger-ui-express": "^5.0.1",
-    "yaml": "^2.7.0"
+    "yaml": "^2.7.0",
+    "yamljs": "^0.3.0"
   }
 }
