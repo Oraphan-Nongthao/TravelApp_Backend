@@ -12,9 +12,7 @@ const multer = require('multer');
 const path = require('path');
 
 const OpenAI = require("openai");
-const openai = new OpenAI({
-    apiKey: process.env.OPEN_AI_KEY,
-});
+
 
 
 const app = express();
@@ -28,6 +26,11 @@ const swaggerDocument = YAML.parse(file);
 app.use(express.json());
 app.use(cors());
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+
+// OpenAI Instance
+const openai = new OpenAI({
+    apiKey: process.env.OPEN_AI_KEY,  // ตรวจสอบว่าโหลดค่า API Key ถูกต้อง
+});
 
 // กำหนดที่เก็บไฟล์
 const storage = multer.diskStorage({
@@ -616,30 +619,34 @@ async function getRecommendedPlaces(data) {
 }
 
 // ✅ฟังก์ชันบันทึกผลลัพธ์ลงใน qa_results
-async function saveResultsToDb(results, account_id) {
+async function saveResultsToDb(results, account_id, transaction) {
     const query = `
         INSERT INTO qa_results 
         (account_id, event_name, event_description, open_day, results_location, time_schedule, results_img_url, distance)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (:account_id, :event_name, :event_description, :open_day, :results_location, :time_schedule, :results_img_url, :distance)
     `;
+
     try {
         for (const result of results) {
-            // บันทึกข้อมูลลงในฐานข้อมูล
-            await sequelize.Promise().execute(query, [
-                account_id, // ใช้ account_id ที่ส่งมา
-                result.event_name || null,
-                result.event_description || null,
-                result.open_day || null,
-                result.results_location || null,
-                result.time_schedule || null,
-                result.results_img_url || null,
-                result.distance || null
-            ]);
+            await sequelize.query(query, {
+                replacements: {
+                    account_id,
+                    event_name: result.event_name || null,
+                    event_description: result.event_description || null,
+                    open_day: result.open_day || null,
+                    results_location: result.results_location || null,
+                    time_schedule: result.time_schedule || null,
+                    results_img_url: result.results_img_url || null,
+                    distance: result.distance || null
+                },
+                type: Sequelize.QueryTypes.INSERT,
+                transaction // เพิ่ม transaction
+            });
         }
         console.log("Results saved successfully!");
     } catch (error) {
         console.error("Error saving results to database:", error);
-        throw error; // หรือจัดการข้อผิดพลาดตามที่คุณต้องการ
+        throw error;
     }
 }
 
@@ -746,7 +753,7 @@ app.post('/qa_transaction', async (req, res) => {
                     activity_interest_id
                 });
 
-                await saveResultsToDb(openAIResults, account_id);
+                await saveResultsToDb(openAIResults, account_id, transaction);
             } catch (aiError) {
                 console.error("OpenAI processing error:", aiError);
             }
