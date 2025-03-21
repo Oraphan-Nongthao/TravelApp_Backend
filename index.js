@@ -384,7 +384,6 @@ app.get('/qa_distance' , async (req,res) => {
     }
 })
 
-
 // ✅Test2 OpenAI
 async function getRecommendedPlaces(data) {
     // ฟังก์ชันช่วยแปลงข้อมูลจากตัวเลขเป็นข้อความ
@@ -548,6 +547,38 @@ async function getRecommendedPlaces(data) {
        วันเปิดบริการ (open_day): <วันเปิดบริการ>
        เวลาเปิด-ปิด (time_schedule): <เวลาเปิด-ปิด>
        ระยะทางจากผู้ใช้ (distance): <ระยะทางจากผู้ใช้>
+    2. ชื่อสถานที่ (event_name): <ชื่อสถานที่>
+       รายละเอียดสถานที่ (event_description): <รายละเอียดสั้นๆ เกี่ยวกับสถานที่>
+       ที่ตั้งสถานที่ (results_location): <ที่ตั้งสถานที่>
+       วันเปิดบริการ (open_day): <วันเปิดบริการ>
+       เวลาเปิด-ปิด (time_schedule): <เวลาเปิด-ปิด>
+       ระยะทางจากผู้ใช้ (distance): <ระยะทางจากผู้ใช้>
+    3. ชื่อสถานที่ (event_name): <ชื่อสถานที่>
+       รายละเอียดสถานที่ (event_description): <รายละเอียดสั้นๆ เกี่ยวกับสถานที่>
+       ที่ตั้งสถานที่ (results_location): <ที่ตั้งสถานที่>
+       วันเปิดบริการ (open_day): <วันเปิดบริการ>
+       เวลาเปิด-ปิด (time_schedule): <เวลาเปิด-ปิด>
+       ระยะทางจากผู้ใช้ (distance): <ระยะทางจากผู้ใช้>
+    4. ชื่อสถานที่ (event_name): <ชื่อสถานที่>
+       รายละเอียดสถานที่ (event_description): <รายละเอียดสั้นๆ เกี่ยวกับสถานที่>
+       ที่ตั้งสถานที่ (results_location): <ที่ตั้งสถานที่>
+       วันเปิดบริการ (open_day): <วันเปิดบริการ>
+       เวลาเปิด-ปิด (time_schedule): <เวลาเปิด-ปิด>
+       ระยะทางจากผู้ใช้ (distance): <ระยะทางจากผู้ใช้>
+    5. ชื่อสถานที่ (event_name): <ชื่อสถานที่>
+       รายละเอียดสถานที่ (event_description): <รายละเอียดสั้นๆ เกี่ยวกับสถานที่>
+       ที่ตั้งสถานที่ (results_location): <ที่ตั้งสถานที่>
+       วันเปิดบริการ (open_day): <วันเปิดบริการ>
+       เวลาเปิด-ปิด (time_schedule): <เวลาเปิด-ปิด>
+       ระยะทางจากผู้ใช้ (distance): <ระยะทางจากผู้ใช้>
+    1. ชื่อสถานที่ (event_name): <ชื่อสถานที่>
+       รายละเอียดสถานที่ (event_description): <รายละเอียดสั้นๆ เกี่ยวกับสถานที่>
+       ที่ตั้งสถานที่ (results_location): <ที่ตั้งสถานที่>
+       วันเปิดบริการ (open_day): <วันเปิดบริการ>
+       เวลาเปิด-ปิด (time_schedule): <เวลาเปิด-ปิด>
+       ระยะทางจากผู้ใช้ (distance): <ระยะทางจากผู้ใช้>
+    แนะนำเฉพาะสถานที่ในกรุงเทพมหานครเท่านั้น ห้ามแนะนำสถานที่นอกกรุงเทพฯ อย่างเด็ดขาด 
+    ต้องมีครบ 5 สถานที่ ไม่มากหรือน้อยกว่านี้
     `;
 
     try {
@@ -620,6 +651,12 @@ async function getRecommendedPlaces(data) {
 
 // ✅ฟังก์ชันบันทึกผลลัพธ์ลงใน qa_results
 async function saveResultsToDb(results, account_id, transaction) {
+    // ตรวจสอบว่ามีผลลัพธ์หรือไม่
+    if (!results || results.length === 0) {
+        console.log("No results to save.");
+        return; // ถ้าไม่มีผลลัพธ์ให้บันทึกเลย
+    }
+
     const query = `
         INSERT INTO qa_results 
         (account_id, event_name, event_description, open_day, results_location, time_schedule, results_img_url, distance)
@@ -628,25 +665,32 @@ async function saveResultsToDb(results, account_id, transaction) {
 
     try {
         for (const result of results) {
-            await sequelize.query(query, {
-                replacements: {
-                    account_id,
-                    event_name: result.event_name || null,
-                    event_description: result.event_description || null,
-                    open_day: result.open_day || null,
-                    results_location: result.results_location || null,
-                    time_schedule: result.time_schedule || null,
-                    results_img_url: result.results_img_url || null,
-                    distance: result.distance || null
-                },
-                type: Sequelize.QueryTypes.INSERT,
-                transaction // เพิ่ม transaction
-            });
+            // ใส่การจัดการ error เฉพาะการบันทึกแต่ละ record เพื่อไม่ให้ error ของการบันทึกครั้งเดียวทำให้ทั้งหมดล้มเหลว
+            try {
+                await sequelize.query(query, {
+                    replacements: {
+                        account_id,
+                        event_name: result.event_name || null,
+                        event_description: result.event_description || null,
+                        open_day: result.open_day || null,
+                        results_location: result.results_location || null,
+                        time_schedule: result.time_schedule || null,
+                        results_img_url: result.results_img_url || null,
+                        distance: result.distance || null
+                    },
+                    type: Sequelize.QueryTypes.INSERT,
+                    transaction // ใช้ transaction ในการบันทึก
+                });
+            } catch (error) {
+                console.error(`Error saving result: ${result.event_name || "Unknown"}`, error);
+                // คุณสามารถเลือกที่จะข้ามหรือบันทึกต่อไปเมื่อพบ error ของผลลัพธ์บางอัน
+                // หรือจะโยน error ออกไปให้ฟังก์ชันที่เรียกใช้งานจัดการต่อ
+            }
         }
         console.log("Results saved successfully!");
     } catch (error) {
         console.error("Error saving results to database:", error);
-        throw error;
+        throw error; // ปล่อยให้ error ถูกจัดการในระดับสูง
     }
 }
 
@@ -654,26 +698,22 @@ async function saveResultsToDb(results, account_id, transaction) {
 app.get('/qa_transaction', async (req, res) => {
     try {
         const query = `
-            SELECT
+                SELECT
                 qa_transaction.qa_transaction_id,
                 qa_transaction.account_id,
                 qa_traveling.traveling_choice,
                 qa_distance.distance_km,
                 qa_transaction.budget,
                 qa_picture.theme AS location_interest,
-                (
-                    SELECT GROUP_CONCAT(qa_activity_picture.theme) 
-                    FROM qa_picture AS qa_activity_picture
-                    WHERE FIND_IN_SET(qa_activity_picture.picture_id, 
-                        TRIM(BOTH '[]' FROM qa_transaction.activity_interest_id)
-                    )
-                ) AS activity_interest,
+                GROUP_CONCAT(qa_activity_picture.theme) AS activity_interest,
                 qa_transaction.longitude,
                 qa_transaction.latitude
             FROM qa_transaction
             LEFT JOIN qa_traveling ON qa_transaction.trip_id = qa_traveling.traveling_id
             LEFT JOIN qa_distance ON qa_transaction.distance_id = qa_distance.distance_id
             LEFT JOIN qa_picture ON qa_transaction.location_interest_id = qa_picture.picture_id
+            LEFT JOIN qa_picture AS qa_activity_picture
+                ON FIND_IN_SET(qa_activity_picture.picture_id, REPLACE(REPLACE(qa_transaction.activity_interest_id, '[', ''), ']', ''))
             GROUP BY
                 qa_transaction.qa_transaction_id,
                 qa_transaction.account_id,
@@ -700,9 +740,9 @@ app.get('/qa_transaction', async (req, res) => {
 
 // ✅บันทึกข้อมูลคำตอบของ QA จาก User
 app.post('/qa_transaction', async (req, res) => {
-    const transaction = await sequelize.transaction(); // ใช้ transaction
+    const transaction = await sequelize.transaction(); // Use transaction for the initial query
     try {
-        console.log("🟢 Start Transaction"); // ตรวจสอบว่าถึงจุดนี้
+        console.log("🟢 Start Transaction");
 
         const { latitude, longitude, trip_id, distance_id, budget, location_interest_id, activity_interest_id } = req.body;
 
@@ -715,7 +755,7 @@ app.post('/qa_transaction', async (req, res) => {
         const activityInterestJSON = JSON.stringify(activity_interest_id);
         let account_id = 0;
 
-        // ✅ บันทึกข้อมูลลงในฐานข้อมูล
+        // ✅ Insert the main transaction data
         const sql = `
             INSERT INTO qa_transaction (account_id, latitude, longitude, trip_id, distance_id, budget, location_interest_id, activity_interest_id) 
             VALUES (:account_id, :latitude, :longitude, :trip_id, :distance_id, :budget, :location_interest_id, :activity_interest_id)
@@ -728,9 +768,9 @@ app.post('/qa_transaction', async (req, res) => {
         });
 
         if (result) {
-            account_id = result; // Sequelize อาจคืนค่า ID เป็นตัวแปรแรกของอาร์เรย์
+            account_id = result; // Get the account_id from the insert result
 
-            // ✅ อัปเดต account_id ใน transaction
+            // ✅ Update account_id in transaction
             const updateSql = `UPDATE qa_transaction SET account_id = :account_id WHERE qa_transaction_id = :qa_transaction_id`;
             await sequelize.query(updateSql, {
                 replacements: { account_id, qa_transaction_id: account_id },
@@ -738,10 +778,11 @@ app.post('/qa_transaction', async (req, res) => {
                 transaction
             });
 
-            // ✅ Commit ข้อมูล
+            // ✅ Commit the transaction for the main transaction insertion
             await transaction.commit();
+            console.log("Transaction committed.");
 
-            // ✅ ส่งข้อมูลไป OpenAI (แยก try/catch เพื่อให้แน่ใจว่าถ้า AI พลาดก็ยังบันทึกข้อมูลได้)
+            // ✅ Now, handle OpenAI results separately
             try {
                 const openAIResults = await getRecommendedPlaces({
                     latitude,
@@ -753,18 +794,30 @@ app.post('/qa_transaction', async (req, res) => {
                     activity_interest_id
                 });
 
-                await saveResultsToDb(openAIResults, account_id, transaction);
+                // You can use a separate transaction here if you want to keep the OpenAI results atomic
+                const newTransaction = await sequelize.transaction();
+
+                try {
+                    await saveResultsToDb(openAIResults, account_id, newTransaction);
+                    await newTransaction.commit(); // Commit the new transaction for OpenAI results
+                    console.log("OpenAI results saved and transaction committed.");
+                } catch (aiError) {
+                    console.error("Error saving OpenAI results:", aiError);
+                    await newTransaction.rollback(); // Rollback if OpenAI processing fails
+                }
+
             } catch (aiError) {
                 console.error("OpenAI processing error:", aiError);
             }
 
+            // ✅ Send the response
             res.json({
                 success: true,
                 message: "Transaction saved and account_id updated successfully!",
                 data: { account_id, latitude, longitude, trip_id, distance_id, budget, location_interest_id, activity_interest_id }
             });
         } else {
-            await transaction.rollback();
+            await transaction.rollback(); // Rollback if the main transaction fails
             res.status(500).json({ success: false, message: "Failed to save transaction." });
         }
 
