@@ -5,8 +5,8 @@ info:
   version: 0.1.9
 
 servers:
-  - url: http://localhost:3000
-  
+  #- url: http://localhost:3000
+  - url: https://nextrip.info/api-docs
     description: Localhost server on port 3000
 
 paths:
