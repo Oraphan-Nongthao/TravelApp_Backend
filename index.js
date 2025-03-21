@@ -1,8 +1,8 @@
 const express = require('express');
 const { Sequelize, QueryTypes } = require('sequelize');
-const swaggerUi = require('swagger-ui-express');
+const swaggerUi = require("swagger-ui-express");
 const fs = require('fs');
-const YAML = require('yaml');
+const YAML = require("yamljs");
 const bcrypt = require('bcryptjs');
 const dotenv = require('dotenv');
 dotenv.config();
@@ -13,19 +13,21 @@ const path = require('path');
 
 const OpenAI = require("openai");
 
-
-
 const app = express();
 const port = process.env.PORT || 3000;
 const saltRounds = 10;
 const axios = require("axios");
 
 const file = fs.readFileSync('./swagger.yaml', 'utf-8');
-const swaggerDocument = YAML.parse(file);
 
 app.use(express.json());
 app.use(cors());
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+
+// โหลดไฟล์ OpenAPI (swagger.yaml)
+const swaggerDocument = YAML.load("./swagger.yaml");
+
+// ให้บริการ Swagger UI
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 // OpenAI Instance
 const openai = new OpenAI({
