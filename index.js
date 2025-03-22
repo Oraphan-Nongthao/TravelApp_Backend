@@ -382,6 +382,32 @@ app.get('/qa_distance' , async (req,res) => {
     }
 })
 
+// ----------------------------- Test longdo ----------------------------- //
+
+app.get("/search_nearby", async (req, res) => {
+    try {
+        const { postcode , radius } = req.query; // รับค่าพิกัดและระยะทาง
+        if ( !postcode || !radius) {
+            return res.status(400).json({ error: "Missing required parameters" });
+        }
+        
+        // เรียก API Longdo Map ค้นหาสถานที่รอบๆ จุดที่กำหนด
+        const response = await axios.get("https://api.longdo.com/POIService/json/search", {
+            params: {
+                key: LONGDO_API_KEY,
+                postcode, 
+                limit: 5, // จำนวนผลลัพธ์สูงสุด
+                span: radius, // ระยะทางค้นหา (เมตร)
+                tag: "สวนสาธารณะ" // ระบุประเภทสถานที่
+            },
+        });
+
+        res.json(response.data);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // ✅Test2 OpenAI
 async function getRecommendedPlaces(data) {
     // ฟังก์ชันช่วยแปลงข้อมูลจากตัวเลขเป็นข้อความ

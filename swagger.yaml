@@ -452,6 +452,50 @@ paths:
                     distance_km:
                       type: string
 
+ #----------------------------- test_longdo -----------------------------#
+  /search_nearby:
+    get:
+      tags: 
+        - Test longdo
+      summary: ค้นหาสถานที่ใกล้เคียง
+      description: ดึงข้อมูลสถานที่รอบๆ ตามพิกัดที่กำหนด
+      parameters:
+        - name: postcode
+          in: query
+          required: true
+          schema:
+            type: number
+          description: รหัสไปรษณีย์ของสถานที่ที่ต้องการค้นหา
+        - name: radius
+          in: query
+          required: true
+          schema:
+            type: integer
+          description: ระยะทางค้นหา (เมตร)
+      responses:
+        "200":
+          description: ข้อมูลสถานที่ที่พบ
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                    address:
+                      type: string
+                    lat:
+                      type: number
+                    lon:
+                      type: number
+        "400":
+          description: ข้อมูลที่ส่งมาไม่ถูกต้อง
+        "500":
+          description: เซิร์ฟเวอร์มีปัญหา
+
+
  #----------------------------- qa_transaction -----------------------------#
 
   /qa_transaction:
