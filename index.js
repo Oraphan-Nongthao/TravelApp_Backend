@@ -386,24 +386,26 @@ app.get('/qa_distance' , async (req,res) => {
 
 app.get("/search_nearby", async (req, res) => {
     try {
-        const { postcode , radius } = req.query; // รับค่าพิกัดและระยะทาง
-        if ( !postcode || !radius) {
-            return res.status(400).json({ error: "Missing required parameters" });
-        }
-        
-        // เรียก API Longdo Map ค้นหาสถานที่รอบๆ จุดที่กำหนด
-        const response = await axios.get("https://api.longdo.com/POIService/json/search", {
+        const { latitude = null, longitude = null, postcode = null, radius = 200 } = req.query;
+
+        const response = await axios.get("https://search.longdo.com/smartsearch/json/search", {
             params: {
-                key: LONGDO_API_KEY,
-                postcode, 
-                limit: 5, // จำนวนผลลัพธ์สูงสุด
-                span: radius, // ระยะทางค้นหา (เมตร)
-                tag: "สวนสาธารณะ" // ระบุประเภทสถานที่
+                key: process.env.LONGDO_API_KEY,
+                lon: longitude, 
+                lat: latitude,
+                lat: latitude,
+                postcode: postcode,
+                limit: 5,
+                span: radius, 
+                keyword: "food",
+                locale: 'th',
+                extendedtype: 'findplacefromtext'
             },
         });
-
+        console.log(response)
         res.json(response.data);
     } catch (error) {
+        console.log(error)
         res.status(500).json({ error: error.message });
     }
 });
