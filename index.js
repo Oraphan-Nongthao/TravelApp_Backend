@@ -565,6 +565,7 @@ async function getRecommendedPlaces(data) {
     - งบประมาณ: ${translatedData.budget} บาท
     - สถานที่ที่สนใจ: ${translatedData.location_interest_id}
     - กิจกรรมที่สนใจ: ${translatedData.activity_interest_id}
+    - พิกัดปัจจุบันของผู้ใช้: ละติจูด ${data.latitude}, ${data.longitude}
 
     โปรดแนะนำสถานที่ท่องเที่ยวในประเทศไทยที่เหมาะสม 5 สถานที่เท่านั้น โดยระบุข้อมูลแต่ละสถานที่ดังนี้:
     1. ชื่อสถานที่ (event_name): <ชื่อสถานที่>
@@ -597,10 +598,12 @@ async function getRecommendedPlaces(data) {
        วันเปิดบริการ (open_day): <วันเปิดบริการ>
        เวลาเปิด-ปิด (time_schedule): <เวลาเปิด-ปิด>
        ระยะทางจากผู้ใช้ (distance): <ระยะทางจากผู้ใช้>
-    แนะนำเฉพาะสถานที่ในประเทศไทยเท่านั้น ห้ามแนะนำสถานที่นอกประเทศไทยอย่างเด็ดขาด 
+    แนะนำเฉพาะสถานที่ในประเทศไทยเท่านั้น ห้ามแนะนำสถานที่นอกประเทศไทยอย่างเด็ดขาด
+    พยายามแนะนำสถานที่ที่อยู่ในระยะที่ผู้ใช้เลือกโดยใช้พิกัดของผู้ใช้เป็นจุดอ้างอิงและใส่พิกัดที่แท้จริงของสถานที่มาด้วย
     ต้องมีครบ 5 สถานที่เท่านั้นถ้าแนะนำมากกว่านั้นให้ตัดออกให้เหลือ 5 สถานที่
     ห้ามมีข้อความอื่นๆ นอกเหนือจากที่ระบุไว้ด้านบน
     `;
+    console.log("Prompt sent to OpenAI:", prompt); // ตรวจสอบ prompt ที่ส่งไป
 
     try {
         // เรียกใช้ OpenAI API
@@ -635,7 +638,7 @@ async function getRecommendedPlaces(data) {
             const openDay = lines[3]?.split(': ')[1]?.trim() || 'เปิดบริการทุกวัน';
             const timeSchedule = lines[4]?.split(': ')[1]?.trim() || '10:00-22:00';
             const distance = lines[5]?.split(': ')[1]?.trim() || translatedData.distance_id;
-            
+
             // ดึงรูปภาพจาก Wikimedia API โดยใช้ชื่อสถานที่
             let resultsImgUrl = await getWikimediaImage(eventName);
             
