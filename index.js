@@ -340,9 +340,11 @@ app.get('/qa_activity' , async (req,res) => {
 
 app.get('/province/:id', async (req, res) => {
     try {
+        //ดึงค่าพารามิเตอร์ id ที่อยู่ใน URL มาเก็บไว้ในตัวแปร id
         const { id } = req.params;
-        await checkConnection(); // ตรวจสอบว่าอันนี้จำเป็นหรือไม่
-        
+        // ตรวจสอบว่าเชื่อมต่อฐานข้อมูลหรือไม่
+        await checkConnection(); 
+        //คำสั่ง SQL ดึงข้อมูลแบบดิบ
         const results = await sequelize.query(
             'SELECT place_id, place_name, place_picture, place_map, province_th, geography_id FROM location_region INNER JOIN thai_provinces ON location_region.Province_id = thai_provinces.Province_id WHERE geography_id = ?',
             {
