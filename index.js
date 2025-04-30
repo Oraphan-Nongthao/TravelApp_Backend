@@ -88,16 +88,17 @@ app.post('/signup', async (req, res) => {
         const [existingUser] = await sequelize.query(
             `SELECT * FROM register_account WHERE account_email = ?`,
             {
+                //ถ้า existingUser มีข้อมูล แปลว่าเคยสมัครแล้ว
                 replacements: [account_email],
                 type: QueryTypes.SELECT
             }
         );
-        
+        //หากอีเมลนี้เคยมีอยู่แล้ว จะส่งกลับ error ไปยังฝั่งผู้ใช้
         if (existingUser) {
             return res.status(400).json({ error: 'Email is already registered' });
         }
 
-        // เข้ารหัสรหัสผ่าน
+        // เข้ารหัสผ่านใช้ bcrypt เพื่อเข้ารหัสรหัสผ่านก่อนเก็บลงฐานข้อมูล
         const hashedPassword = await bcrypt.hash(account_password, saltRounds);
         
         // สร้างเวลาในรูปแบบเวลาประเทศไทย
@@ -140,12 +141,12 @@ app.post('/signin', async (req, res) => {
                 type: QueryTypes.SELECT
             }
         );
-
+        //ถ้าไม่พบผู้ใช้ จะส่ง error กลับไปทันทีว่า “Invalid credentials” (ข้อมูลล็อกอินไม่ถูกต้อง)
         if (!user) {
             return res.status(400).json({ error: 'Invalid credentials' });
         }
         
-        // ตรวจสอบรหัสผ่าน
+        // ตรวจสอบรหัสผ่านใช้ bcrypt.compare() เพื่อเปรียบเทียบรหัสผ่านที่ผู้ใช้กรอกกับรหัสผ่านที่ถูกเข้ารหัสไว้ในฐานข้อมูล
         const isMatch = await bcrypt.compare(account_password, user.account_password);
         if (!isMatch) {
             return res.status(400).json({ error: 'Invalid credentials' });
@@ -154,10 +155,11 @@ app.post('/signin', async (req, res) => {
         // สร้าง JWT Token
         const token = jwt.sign(
             { account_id: user.account_id, account_email: user.account_email,account_name:user.account_name,account_picture:user.account_picture },
+            //ใช้ JWT_SECRET จาก .env เป็นกุญแจลับในการเข้ารหัส
             process.env.JWT_SECRET,
             { expiresIn: '30 m' }  // กำหนดเวลาให้ token หมดอายุใน 30 นาที
         );
-        
+        //หากเข้าสู่ระบบสำเร็จ ระบบจะส่ง token กลับไปให้ client เพื่อยืนยันตัวตนในการเรียก API
         res.status(200).json({ token });
     } catch (err) {
         res.status(500).json({ error: 'Internal server error', details: err.message });
@@ -329,12 +331,25 @@ app.get('/qa_picture' , async (req,res) => {
 app.get('/qa_activity' , async (req,res) => {
     try {
         await checkConnection();
-        const results = await sequelize.query('SELECT picture_id , theme FROM qa_picture', { type: QueryTypes.SELECT });
+        const results = await sequelize.query('SELECT activity_id , activity_name FROM qa_activity', { type: QueryTypes.SELECT });
         res.json(results);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 })
+
+// ----------------------------- qa_emotional ----------------------------- //
+
+app.get('/qa_emotional' , async (req,res) => {
+    try {
+        await checkConnection();
+        const results = await sequelize.query('SELECT emotional_id , emotional_name FROM qa_emotional', { type: QueryTypes.SELECT });
+        res.json(results);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+})
+
 
 // ----------------------------- province ----------------------------- //
 
@@ -344,12 +359,14 @@ app.get('/province/:id', async (req, res) => {
         const { id } = req.params;
         // ตรวจสอบว่าเชื่อมต่อฐานข้อมูลหรือไม่
         await checkConnection(); 
-        //คำสั่ง SQL ดึงข้อมูลแบบดิบ
+        //คำสั่ง SQL ดึงข้อมูลแบบดิบใช้ร่วมกับ await เพื่อรอผลลัพธ์จากฐานข้อมูล
         const results = await sequelize.query(
             'SELECT place_id, place_name, place_picture, place_map, province_th, geography_id FROM location_region INNER JOIN thai_provinces ON location_region.Province_id = thai_provinces.Province_id WHERE geography_id = ?',
             {
-                replacements: [Number(id)], // แปลง id เป็นตัวเลข
-                type: QueryTypes.SELECT
+                // แทนที่เครื่องหมาย ? ด้วยค่าจาก id โดยแปลงเป็นตัวเลขเพื่อป้องกัน SQL Injection
+                replacements: [Number(id)],
+                //คือระบุว่าเป็นคำสั่ง SELECT 
+                type: QueryTypes.SELECT 
             }
         );
 
