@@ -440,14 +440,17 @@ async function getRecommendedPlaces(data) {
                     case 2: return 'เดินทางกับครอบครัว';
                     case 3: return 'เดินทางกับแฟน';
                     case 4: return 'เดินทางกับเพื่อน';
+                    case 5: return 'เดินทางกับเพื่อนร่วมงาน';
+                    case 6: return 'เดินทางกับเด็ก/ผู้สูงอายุ';
+                    case 7: return 'เดินทางกับสัตว์เลี้ยง';
                     default: return 'ไม่ระบุ';
                 }
             case 'distance_id':
                 switch (choice) {
-                    case 1: return '0-5 กิโลเมตร';
-                    case 2: return '5-10 กิโลเมตร';
-                    case 3: return '10-15 กิโลเมตร';
-                    case 4: return '15-20 กิโลเมตร';
+                    case 1: return '0-50 กิโลเมตร';
+                    case 2: return '51-100 กิโลเมตร';
+                    case 3: return '101-200 กิโลเมตร';
+                    case 4: return 'มากกว่า 200 กิโลเมตร';
                     default: return 'ไม่ระบุ';
                 }
             case 'location_interest_id':
@@ -456,27 +459,46 @@ async function getRecommendedPlaces(data) {
                     case 2: return 'สวนสาธารณะ';
                     case 3: return 'สวนสนุกและสวนน้ำ';
                     case 4: return 'งานศิลปะและนิทรรศการ';
-                    case 5: return 'สปาและออนเซ็น';
-                    case 6: return 'ห้างสรรพสินค้า';
-                    case 7: return 'ร้านอาหารและเครื่องดื่ม';
+                    case 5: return 'ธรรมชาติ';
+                    case 6: return 'กิจกรรมและผญจภัย';
+                    case 7: return 'ตลาดนัดและถนนคนเดิน';
                     case 8: return 'วัดและสถานที่โบราณ';
                     default: return 'ไม่ระบุ';
                 }
-            case 'activity_interest_id':
+            case 'activity_id':
                 if (!Array.isArray(choice)) return 'ไม่ระบุ';
                 return choice.map(activity => {
                     switch (activity) {
-                        case 1: return 'คาเฟ่และกิจกรรมต่างๆ';
-                        case 2: return 'สวนสาธารณะ';
-                        case 3: return 'สวนสนุกและสวนน้ำ';
-                        case 4: return 'งานศิลปะและนิทรรศการ';
-                        case 5: return 'สปาและออนเซ็น';
-                        case 6: return 'ห้างสรรพสินค้า';
-                        case 7: return 'ร้านอาหารและเครื่องดื่ม';
-                        case 8: return 'วัดและสถานที่โบราณ';
+                        case 1: return 'ชิมอาหารริมทางและช้อปปิ้งในตลาด';
+                        case 2: return 'กิจกรรมผ่อนคลายและฟื้นฟูร่างกาย';
+                        case 3: return 'กิจกรรมผจญภัย';
+                        case 4: return 'กิจกรรมสำรวจธรรมชาติ';
+                        case 5: return 'กิจกรรมทางวัฒนธรรม';
+                        case 6: return 'กิจกรรมทางน้ำ';
                         default: return 'ไม่ระบุ';
                     }
                 }).join(', ');
+            case 'emotional_id':
+                switch (choice) {
+                    case 1: return 'รู้สึกมีความรัก';
+                    case 2: return 'รู้สึกมีความสุข';
+                    case 3: return 'รู้สึกสบายๆ';
+                    case 4: return 'รู้สึกเศร้า';
+                    case 5: return 'รู้สึกเหนื่อยล้า';
+                    case 6: return 'รู้สึกหิว';
+                    case 7: return 'รู้สึกเซ็ง';
+                    case 8: return 'รู้สึกโกรธ';
+                    case 9: return 'รู้สึกเบื่อ';
+                    case 10: return 'รู้สึกเพิ่งเสร็จงาน';
+                    default: return 'ไม่ระบุ';
+                }
+            case 'value_id':
+                switch (choice) {
+                    case 1: return '100-500 บาท';
+                    case 2: return '550-1,000 บาท';
+                    case 3: return '1,500-2,000 บาท';
+                    case 4: return '5,500-10,000 บาท';
+                }
             default:
                 return choice || 'ไม่ระบุ';
         }
@@ -486,9 +508,10 @@ async function getRecommendedPlaces(data) {
     const translatedData = {
         trip_id: translateChoice(data.trip_id, 'trip_id'),
         distance_id: translateChoice(data.distance_id, 'distance_id'),
-        budget: data.budget || 'ไม่ระบุ',
+        value_id: translateChoice(data.value_id, 'value_id'),
         location_interest_id: translateChoice(data.location_interest_id, 'location_interest_id'),
-        activity_interest_id: translateChoice(data.activity_interest_id, 'activity_interest_id')
+        activity_id: translateChoice(data.activity_id, 'activity_id'),
+        emotional_id: translateChoice(data.emotional_id, 'emotional_id'),
     };
 
     // ฟังก์ชันแปลงชื่อสถานที่จากภาษาไทยเป็นภาษาอังกฤษ
@@ -581,9 +604,10 @@ async function getRecommendedPlaces(data) {
     คุณได้เลือกคำตอบดังนี้:
     - ประเภทการเดินทาง: ${translatedData.trip_id}
     - ระยะทาง: ${translatedData.distance_id}
-    - งบประมาณ: ${translatedData.budget} บาท
+    - งบประมาณ: ${translatedData.value_id}
     - สถานที่ที่สนใจ: ${translatedData.location_interest_id}
-    - กิจกรรมที่สนใจ: ${translatedData.activity_interest_id}
+    - กิจกรรมที่สนใจ: ${translatedData.activity_id}
+    - อารมณ์ที่ต้องการ: ${translatedData.emotional_id}
     - พิกัดปัจจุบันของผู้ใช้: ละติจูด ${data.latitude}, ${data.longitude}
 
     โปรดแนะนำสถานที่ท่องเที่ยวในประเทศไทยที่เหมาะสม 5 สถานที่เท่านั้น โดยระบุข้อมูลแต่ละสถานที่ดังนี้:
@@ -741,29 +765,33 @@ async function saveResultsToDb(results, account_id, transaction) {
 app.get('/qa_transaction', async (req, res) => {
     try {
         const query = `
-                SELECT
+            SELECT
                 qa_transaction.qa_transaction_id,
                 qa_transaction.account_id,
                 qa_traveling.traveling_choice,
                 qa_distance.distance_km,
-                qa_transaction.budget,
+                qa_value.value_money,
                 qa_picture.theme AS location_interest,
-                GROUP_CONCAT(qa_activity_picture.theme) AS activity_interest,
+                GROUP_CONCAT(qa_activity.activity_name ORDER BY qa_activity.activity_name) AS activity_interest,
+                qa_emotional.emotional_name,
                 qa_transaction.longitude,
                 qa_transaction.latitude
             FROM qa_transaction
             LEFT JOIN qa_traveling ON qa_transaction.trip_id = qa_traveling.traveling_id
             LEFT JOIN qa_distance ON qa_transaction.distance_id = qa_distance.distance_id
             LEFT JOIN qa_picture ON qa_transaction.location_interest_id = qa_picture.picture_id
-            LEFT JOIN qa_picture AS qa_activity_picture
-                ON FIND_IN_SET(qa_activity_picture.picture_id, REPLACE(REPLACE(qa_transaction.activity_interest_id, '[', ''), ']', ''))
+            LEFT JOIN qa_activity 
+                ON FIND_IN_SET(qa_activity.activity_id, REPLACE(REPLACE(qa_transaction.activity_id, '[', ''), ']', ''))
+            LEFT JOIN qa_emotional ON qa_transaction.emotional_id = qa_emotional.emotional_id
+            LEFT JOIN qa_value ON qa_transaction.value_id = qa_value.value_id
             GROUP BY
                 qa_transaction.qa_transaction_id,
                 qa_transaction.account_id,
                 qa_traveling.traveling_choice,
                 qa_distance.distance_km,
-                qa_transaction.budget,
+                qa_value.value_money,
                 qa_picture.theme,
+                qa_emotional.emotional_name,
                 qa_transaction.longitude,
                 qa_transaction.latitude;
         `;
@@ -787,25 +815,25 @@ app.post('/qa_transaction', async (req, res) => {
     try {
         console.log("🟢 Start Transaction");
 
-        const { latitude, longitude, trip_id, distance_id, budget, location_interest_id, activity_interest_id } = req.body;
+        const { latitude, longitude, trip_id, distance_id, value_id, location_interest_id, activity_id, emotional_id } = req.body;
 
-        if (!latitude || !longitude || !trip_id || !distance_id || !budget || !location_interest_id || !Array.isArray(activity_interest_id)) {
+        if (!latitude || !longitude || !trip_id || !distance_id || !value_id || !location_interest_id || !Array.isArray(activity_id), !emotional_id) {
             return res.status(400).json({ success: false, message: "Missing or invalid required fields." });
         }
 
         console.log("🟢 Data validated:", req.body);
 
-        const activityInterestJSON = JSON.stringify(activity_interest_id);
+        const activityInterestJSON = JSON.stringify(activity_id);
         let account_id = 0;
 
         // ✅ Insert the main transaction data
         const sql = `
-            INSERT INTO qa_transaction (account_id, latitude, longitude, trip_id, distance_id, budget, location_interest_id, activity_interest_id) 
-            VALUES (:account_id, :latitude, :longitude, :trip_id, :distance_id, :budget, :location_interest_id, :activity_interest_id)
+            INSERT INTO qa_transaction (account_id, latitude, longitude, trip_id, distance_id, value_id, location_interest_id, activity_id, emotional_id) 
+            VALUES (:account_id, :latitude, :longitude, :trip_id, :distance_id, :value_id, :location_interest_id, :activity_id, :emotional_id)
         `;
 
         const [result] = await sequelize.query(sql, {
-            replacements: { account_id, latitude, longitude, trip_id, distance_id, budget, location_interest_id, activity_interest_id: activityInterestJSON },
+            replacements: { account_id, latitude, longitude, trip_id, distance_id, value_id, location_interest_id, activity_id: activityInterestJSON, emotional_id },
             type: Sequelize.QueryTypes.INSERT,
             transaction
         });
@@ -832,9 +860,10 @@ app.post('/qa_transaction', async (req, res) => {
                     longitude,
                     trip_id,
                     distance_id,
-                    budget,
+                    value_id,
                     location_interest_id,
-                    activity_interest_id
+                    activity_id,
+                    emotional_id
                 });
 
                 // You can use a separate transaction here if you want to keep the OpenAI results atomic
@@ -857,7 +886,7 @@ app.post('/qa_transaction', async (req, res) => {
             res.json({
                 success: true,
                 message: "Transaction saved and account_id updated successfully!",
-                data: { account_id, latitude, longitude, trip_id, distance_id, budget, location_interest_id, activity_interest_id }
+                data: { account_id, latitude, longitude, trip_id, distance_id, value_id, location_interest_id, activity_id, emotional_id}
             });
         } else {
             await transaction.rollback(); // Rollback if the main transaction fails
