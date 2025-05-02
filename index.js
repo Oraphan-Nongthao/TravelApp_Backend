@@ -326,6 +326,19 @@ app.get('/qa_picture' , async (req,res) => {
     }
 })
 
+// ----------------------------- qa_value ----------------------------- //
+
+app.get('/qa_value' , async (req,res) => {
+    try {
+        await checkConnection();
+        const results = await sequelize.query('SELECT value_id  , value_money FROM qa_value', { type: QueryTypes.SELECT });
+        res.json(results);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+})
+
+
 // ----------------------------- qa_activity ----------------------------- //
 
 app.get('/qa_activity' , async (req,res) => {
