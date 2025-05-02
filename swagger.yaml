@@ -394,10 +394,10 @@ paths:
   /qa_value:
     get:
       tags: [qa_questions]
-      summary: Returns a list of qa_activate.
+      summary: Returns a list of qa_value.
       responses:
         "200":
-          description: A JSON array of qa_activate
+          description: A JSON array of qa_value
           content:
             application/json:
               schema:
