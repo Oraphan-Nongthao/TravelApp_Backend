@@ -522,7 +522,7 @@ async function getRecommendedPlaces(data) {
                 model: "gpt-4o",
                 messages: [{ 
                     role: "user", 
-                    content: `แปลชื่อสถานที่ท่องเที่ยวในกรุงเทพฯ นี้เป็นภาษาอังกฤษ (ให้ตอบเฉพาะชื่อภาษาอังกฤษเท่านั้น ไม่ต้องมีข้อความอื่น): ${thaiName}` 
+                    content: `แปลชื่อสถานที่ท่องเที่ยวในประเทศไทยนี้เป็นภาษาอังกฤษ (ให้ตอบเฉพาะชื่อภาษาอังกฤษเท่านั้น ไม่ต้องมีข้อความอื่น): ${thaiName}` 
                 }],
                 max_tokens: 1000
             });
@@ -546,8 +546,8 @@ async function getRecommendedPlaces(data) {
             // สร้างคำค้นหาที่เฉพาะเจาะจงมากขึ้น
             const searchTerms = [
                 `${englishName} Bangkok Thailand`,
-                `${englishName} Bangkok`,
                 `${englishName} Thailand tourism`,
+                `${englishName} Thailand`,
                 englishName
             ];
             
@@ -567,7 +567,9 @@ async function getRecommendedPlaces(data) {
                     const fileName = data.query.search[0].title.replace('File:', '');
                     
                     // ตรวจสอบความเกี่ยวข้องของรูปภาพ
-                    if (fileName.toLowerCase().includes(englishName.toLowerCase())) {
+                    if (fileName.toLowerCase().includes(englishName.toLowerCase()) || 
+                        englishName.toLowerCase().includes(fileName.toLowerCase()) ||
+                        searchTerm.toLowerCase().includes(fileName.toLowerCase())) {
                         // สร้าง URL สำหรับรูปภาพ (ดึงข้อมูล URL จริงของรูปภาพ)
                         const imageInfoUrl = `https://commons.wikimedia.org/w/api.php?action=query&titles=File:${encodeURIComponent(fileName)}&prop=imageinfo&iiprop=url&format=json&origin=*`;
                         
@@ -599,52 +601,30 @@ async function getRecommendedPlaces(data) {
     // เก็บรูปภาพที่ใช้แล้วเพื่อป้องกันการซ้ำซ้อน
     const usedImages = new Set();
 
-    // สร้าง prompt เพื่อขอคำแนะนำจาก OpenAI
+    // สร้าง prompt เพื่อขอคำแนะนำจาก OpenAI แบบเป็นกันเองมากขึ้น
     const prompt = `
-    คุณได้เลือกคำตอบดังนี้:
-    - ประเภทการเดินทาง: ${translatedData.trip_id}
-    - ระยะทาง: ${translatedData.distance_id}
-    - งบประมาณ: ${translatedData.value_id}
-    - สถานที่ที่สนใจ: ${translatedData.location_interest_id}
-    - กิจกรรมที่สนใจ: ${translatedData.activity_id}
-    - อารมณ์ที่ต้องการ: ${translatedData.emotional_id}
-    - พิกัดปัจจุบันของผู้ใช้: ละติจูด ${data.latitude}, ${data.longitude}
+    สวัสดีเพื่อน! ฉันกำลังมองหาสถานที่เที่ยวในประเทศไทยที่น่าสนใจและเข้ากับความชอบของฉัน ช่วยแนะนำหน่อยได้ไหม?
 
-    โปรดแนะนำสถานที่ท่องเที่ยวในประเทศไทยที่เหมาะสม 5 สถานที่เท่านั้น โดยระบุข้อมูลแต่ละสถานที่ดังนี้:
-    1. ชื่อสถานที่ (event_name): <ชื่อสถานที่>
-       รายละเอียดสถานที่ (event_description): <รายละเอียดสั้นๆ เกี่ยวกับสถานที่>
-       ที่ตั้งสถานที่ (results_location): <ที่ตั้งสถานที่>
-       วันเปิดบริการ (open_day): <วันเปิดบริการ>
-       เวลาเปิด-ปิด (time_schedule): <เวลาเปิด-ปิด>
-       ระยะทางจากผู้ใช้ (distance): <ระยะทางจากผู้ใช้>
-    2. ชื่อสถานที่ (event_name): <ชื่อสถานที่>
-       รายละเอียดสถานที่ (event_description): <รายละเอียดสั้นๆ เกี่ยวกับสถานที่>
-       ที่ตั้งสถานที่ (results_location): <ที่ตั้งสถานที่>
-       วันเปิดบริการ (open_day): <วันเปิดบริการ>
-       เวลาเปิด-ปิด (time_schedule): <เวลาเปิด-ปิด>
-       ระยะทางจากผู้ใช้ (distance): <ระยะทางจากผู้ใช้>
-    3. ชื่อสถานที่ (event_name): <ชื่อสถานที่>
-       รายละเอียดสถานที่ (event_description): <รายละเอียดสั้นๆ เกี่ยวกับสถานที่>
-       ที่ตั้งสถานที่ (results_location): <ที่ตั้งสถานที่>
-       วันเปิดบริการ (open_day): <วันเปิดบริการ>
-       เวลาเปิด-ปิด (time_schedule): <เวลาเปิด-ปิด>
-       ระยะทางจากผู้ใช้ (distance): <ระยะทางจากผู้ใช้>
-    4. ชื่อสถานที่ (event_name): <ชื่อสถานที่>
-       รายละเอียดสถานที่ (event_description): <รายละเอียดสั้นๆ เกี่ยวกับสถานที่>
-       ที่ตั้งสถานที่ (results_location): <ที่ตั้งสถานที่>
-       วันเปิดบริการ (open_day): <วันเปิดบริการ>
-       เวลาเปิด-ปิด (time_schedule): <เวลาเปิด-ปิด>
-       ระยะทางจากผู้ใช้ (distance): <ระยะทางจากผู้ใช้>
-    5. ชื่อสถานที่ (event_name): <ชื่อสถานที่>
-       รายละเอียดสถานที่ (event_description): <รายละเอียดสั้นๆ เกี่ยวกับสถานที่>
-       ที่ตั้งสถานที่ (results_location): <ที่ตั้งสถานที่>
-       วันเปิดบริการ (open_day): <วันเปิดบริการ>
-       เวลาเปิด-ปิด (time_schedule): <เวลาเปิด-ปิด>
-       ระยะทางจากผู้ใช้ (distance): <ระยะทางจากผู้ใช้>
-    แนะนำเฉพาะสถานที่ในประเทศไทยเท่านั้น ห้ามแนะนำสถานที่นอกประเทศไทยอย่างเด็ดขาด
-    พยายามแนะนำสถานที่ที่อยู่ในระยะที่ผู้ใช้เลือกโดยใช้พิกัดของผู้ใช้เป็นจุดอ้างอิงและใส่พิกัดที่แท้จริงของสถานที่มาด้วย
-    ต้องมีครบ 5 สถานที่เท่านั้นถ้าแนะนำมากกว่านั้นให้ตัดออกให้เหลือ 5 สถานที่
-    ห้ามมีข้อความอื่นๆ นอกเหนือจากที่ระบุไว้ด้านบน
+    นี่คือสิ่งที่ฉันกำลังมองหา:
+    - เดินทางแบบ: ${translatedData.trip_id}
+    - อยากไปไกลประมาณ: ${translatedData.distance_id}
+    - งบที่มี: ${translatedData.value_id}
+    - สถานที่ที่ฉันชอบ: ${translatedData.location_interest_id}
+    - กิจกรรมที่อยากทำ: ${translatedData.activity_id}
+    - ตอนนี้ฉันรู้สึก: ${translatedData.emotional_id}
+    - ตอนนี้ฉันอยู่ที่: ละติจูด ${data.latitude}, ลองจิจูด ${data.longitude}
+
+    ช่วยแนะนำ 5 สถานที่ที่น่าสนใจให้ฉันหน่อยนะ! สำหรับแต่ละที่ ฉันอยากรู้:
+    1. ชื่อสถานที่ (event_name): [ชื่อ]
+       รายละเอียดสั้นๆ (event_description): [ข้อมูลสั้นๆ ที่น่าสนใจ]
+       ที่ตั้ง (results_location): [สถานที่ตั้งพร้อมพิกัด]
+       วันเปิด (open_day): [วันที่เปิดให้บริการ]
+       เวลาเปิด-ปิด (time_schedule): [เวลาทำการ]
+       ระยะทางจากฉัน (distance): [ระยะทางโดยประมาณ]
+
+    ขอให้แนะนำครบทั้ง 5 สถานที่นะ ไม่มากกว่าหรือน้อยกว่า ขอเฉพาะสถานที่ในประเทศไทยเท่านั้น และพยายามแนะนำที่ที่อยู่ในระยะทางที่ฉันบอกด้วย! อย่าลืมระบุตำแหน่งพิกัดของแต่ละที่ด้วยนะ
+
+    อ้อ ช่วยตอบมาเฉพาะข้อมูลตามรูปแบบด้านบนเท่านั้น ไม่ต้องมีข้อความอื่นๆ เพิ่มเติมนะ ขอบคุณมาก!
     `;
     console.log("Prompt sent to OpenAI:", prompt); // ตรวจสอบ prompt ที่ส่งไป
 
@@ -671,8 +651,8 @@ async function getRecommendedPlaces(data) {
         // สร้างผลลัพธ์สำหรับแต่ละสถานที่
         const results = [];
         
-        // วนลูปเพื่อดึงรูปภาพสำหรับแต่ละสถานที่
-        for (let i = 0; i < recommendations.length; i++) {
+        // วนลูปเพื่อดึงรูปภาพสำหรับแต่ละสถานที่ (จำกัดแค่ 5 สถานที่)
+        for (let i = 0; i < Math.min(recommendations.length, 5); i++) {
             const rec = recommendations[i];
             const lines = rec.split('\n');
             const eventName = lines[0]?.split(': ')[1]?.trim() || `สถานที่ ${i + 1}`;
@@ -709,6 +689,16 @@ async function getRecommendedPlaces(data) {
                 distance: distance
             });
         }
+
+        // ใช้เฉพาะสถานที่ที่ได้จาก prompt ไม่ต้องเพิ่มสถานที่ตัวอย่าง
+
+        // ตรวจสอบและจำกัดให้มีเฉพาะ 5 สถานที่
+        if (results.length > 5) {
+            results.splice(5); // ตัดให้เหลือเพียง 5 สถานที่
+        }
+        
+        // หากมีน้อยกว่า 5 สถานที่ ไม่ต้องเพิ่มเติม ใช้เฉพาะสถานที่ที่ได้จาก prompt
+
         return results;
     } catch (error) {
         console.error("Error fetching recommendations:", error);
