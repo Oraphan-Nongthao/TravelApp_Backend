@@ -322,20 +322,18 @@ paths:
 #----------------------------- province -----------------------------#
   /province/{id}:
     get:
-      summary: Get a geography by ID
+      summary: Get recommended locations by province_id
       tags: [location_region]
       parameters:
-        - name: id 
-          in: path
+        - in: path
+          name: id
           required: true
-          description: Geography ID
           schema:
             type: integer
-            format: int64
-            minimum: 1
+          description: The ID of the province
       responses:
         '200':
-          description: Success - Returns the requested data list
+          description: A list of recommended places
           content:
             application/json:
               schema:
@@ -345,6 +343,8 @@ paths:
                   properties:
                     place_id:
                       type: integer
+                    place_theme:
+                      type: string
                     place_name:
                       type: string
                     place_picture:
@@ -354,7 +354,9 @@ paths:
                     province_th:
                       type: string
                     geography_id:
-                      type: integer 
+                      type: integer
+                    result:
+                      type: integer
         '500':
           description: Server error
           content:
@@ -364,8 +366,6 @@ paths:
                 properties:
                   error:
                     type: string
-                    example: "Internal Server Error"
-
 #----------------------------- qa_picture -----------------------------#
 
   /qa_picture:

@@ -368,17 +368,36 @@ app.get('/qa_emotional' , async (req,res) => {
 
 app.get('/province/:id', async (req, res) => {
     try {
-        //ดึงค่าพารามิเตอร์ id ที่อยู่ใน URL มาเก็บไว้ในตัวแปร id
         const { id } = req.params;
-        // ตรวจสอบว่าเชื่อมต่อฐานข้อมูลหรือไม่
         await checkConnection(); 
-        //คำสั่ง SQL ดึงข้อมูลแบบดิบใช้ร่วมกับ await เพื่อรอผลลัพธ์จากฐานข้อมูล
+
         const results = await sequelize.query(
-            'SELECT place_id, place_name, place_picture, place_map, province_th, geography_id FROM location_region INNER JOIN thai_provinces ON location_region.Province_id = thai_provinces.Province_id WHERE geography_id = ?',
+            `SELECT * FROM (
+                SELECT 
+                    lr.place_id, 
+                    lr.place_theme, 
+                    lr.place_name, 
+                    lr.place_picture, 
+                    lr.place_map, 
+                    tp.province_th, 
+                    tp.geography_id, 
+                    ROW_NUMBER() OVER (PARTITION BY tp.geography_id ORDER BY RAND()) AS result
+                FROM location_region lr 
+                JOIN thai_provinces tp ON lr.province_id = tp.province_id 
+                JOIN qa_transaction qt ON qt.qa_transaction_id = (
+                    SELECT MAX(qa_transaction_id) FROM qa_transaction
+                ) 
+                JOIN qa_activity qa ON FIND_IN_SET(
+                    qa.activity_id,
+                    REPLACE(SUBSTRING(qt.activity_interest_id, 2, LENGTH(qt.activity_interest_id) - 2), ' ', '')
+                ) > 0 
+                WHERE TRIM(LOWER(lr.place_theme)) = TRIM(LOWER(qa.activity_name)) 
+                AND tp.geography_id = ?
+            ) AS ranked 
+            WHERE result <= 6
+            ORDER BY geography_id , result`,
             {
-                // แทนที่เครื่องหมาย ? ด้วยค่าจาก id โดยแปลงเป็นตัวเลขเพื่อป้องกัน SQL Injection
                 replacements: [Number(id)],
-                //คือระบุว่าเป็นคำสั่ง SELECT 
                 type: QueryTypes.SELECT 
             }
         );
@@ -388,7 +407,6 @@ app.get('/province/:id', async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
-
 
 // ----------------------------- qa_traveling ----------------------------- //
 
