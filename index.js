@@ -381,7 +381,7 @@ app.get('/province/:id', async (req, res) => {
                     lr.place_map, 
                     tp.province_th, 
                     tp.geography_id, 
-                    ROW_NUMBER() OVER (PARTITION BY tp.geography_id ORDER BY RAND()) AS result
+                    ROW_NUMBER() OVER (PARTITION BY tp.geography_id ORDER BY RAND()) AS result 
                 FROM location_region lr 
                 JOIN thai_provinces tp ON lr.province_id = tp.province_id 
                 JOIN qa_transaction qt ON qt.qa_transaction_id = (
@@ -394,8 +394,9 @@ app.get('/province/:id', async (req, res) => {
                 WHERE TRIM(LOWER(lr.place_theme)) = TRIM(LOWER(qa.activity_name)) 
                 AND tp.geography_id = ?
             ) AS ranked 
-            WHERE result <= 6
-            ORDER BY geography_id , result`,
+            WHERE result <= 6 
+            ORDER BY geography_id, result;
+            `,
             {
                 replacements: [Number(id)],
                 type: QueryTypes.SELECT 
